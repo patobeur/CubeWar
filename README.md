@@ -75,8 +75,8 @@
 ## Jeu
 
 -  c'est un jeu solo ou il faut faire gagner son camp.
--  il doit y avoir 40 cubes max (on verras si c'est trop plus tard)
--  5 couleurs de cubes (on verras si c'est trop peu plus tard).
+-  il doit y avoir 50 cubes max (on verras si c'est trop plus tard) 10 par factions -1 dans une faction car c'est le joueur.
+-  5 couleurs de cubes, soit 5 factions (on verras si c'est trop peu plus tard).
 -  les cubes n'ont pas forcement le meme comportement ni la meme taille.
 -  des ressources pop sur la map.
 -  a chaque fois q'un cube meur, un autre apparait d'une des 5 couleurs.
@@ -89,3 +89,5 @@
 ## l'attaque
 
 -  couleur 1 : tir des projectile a courte distance
+
+## factions
