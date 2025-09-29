@@ -145,29 +145,40 @@ class PlayerManager {
 		this.playerGroupe.position.set(this.position.x, this.position.y, this.position.z);
 	}
 	#playerMoveActions() {
-		if (this.ControlsM) {
-			let speed = this.maxSpeed;
-			this.position.thetaDeg = this.ControlsM.thetaDeg
-			this.playerGroupe.rotation.z = THREE.Math.degToRad(this.position.thetaDeg);
+        if (this.ControlsM) {
+            let speed = this.maxSpeed;
+            this.position.thetaDeg = this.ControlsM.thetaDeg;
+            this.playerGroupe.rotation.z = THREE.Math.degToRad(this.position.thetaDeg);
 
-			if (this.ControlsM.forward || this.ControlsM.reverse || this.ControlsM.left || this.ControlsM.right) {
-				if (this.ControlsM.forward) { this.playerGroupe.position.y += speed }
-				if (this.ControlsM.reverse) { this.playerGroupe.position.y -= speed }
-				if (this.ControlsM.left) { this.playerGroupe.position.x -= speed }
-				if (this.ControlsM.right) { this.playerGroupe.position.x += speed }
-			}
-			this.#Camera.position.set(
-				this.#Config.get_camera('decalage').x + this.playerGroupe.position.x,
-				this.#Config.get_camera('decalage').y + this.playerGroupe.position.y,
-				this.#Config.get_camera('decalage').z + this.playerGroupe.position.z
-			);
-			this.#Camera.lookAt(
-				this.playerGroupe.position.x,
-				this.playerGroupe.position.y,
-				this.playerGroupe.position.z
-			);
-		}
-	}
+            const forwardVector = new THREE.Vector3(-Math.sin(this.playerGroupe.rotation.z), Math.cos(this.playerGroupe.rotation.z), 0);
+            const rightVector = new THREE.Vector3(forwardVector.y, -forwardVector.x, 0);
+
+            if (this.ControlsM.forward) {
+                this.playerGroupe.position.add(forwardVector.clone().multiplyScalar(speed));
+            }
+            if (this.ControlsM.reverse) {
+                this.playerGroupe.position.sub(forwardVector.clone().multiplyScalar(speed));
+            }
+            if (this.ControlsM.right) { // Strafe Right
+                this.playerGroupe.position.add(rightVector.clone().multiplyScalar(speed));
+            }
+            if (this.ControlsM.left) { // Strafe Left
+                this.playerGroupe.position.sub(rightVector.clone().multiplyScalar(speed));
+            }
+
+            // Update camera position to follow player
+            this.#Camera.position.set(
+                this.#Config.get_camera('decalage').x + this.playerGroupe.position.x,
+                this.#Config.get_camera('decalage').y + this.playerGroupe.position.y,
+                this.#Config.get_camera('decalage').z + this.playerGroupe.position.z
+            );
+            this.#Camera.lookAt(
+                this.playerGroupe.position.x,
+                this.playerGroupe.position.y,
+                this.playerGroupe.position.z
+            );
+        }
+    }
 
 	#shoot(game) {
         if (this.ControlsM) {

@@ -4,7 +4,7 @@ class MobsIa {
         this.target = null;
     }
 
-    iaAction(self, allMobs, foodItems, game) {
+    iaAction(self, allMobs, foodItems, game, player) {
         if (self.stats.hp.current <= 0) {
             return;
         }
@@ -26,7 +26,7 @@ class MobsIa {
         }
 
         // Standard behavior
-        this.#scanForEnemies(self, allMobs);
+        this.#scanForEnemies(self, allMobs, player);
 
         if (this.target) {
             this.#attack(self, this.target, game);
@@ -50,18 +50,33 @@ class MobsIa {
         return closestFood;
     }
 
-    #scanForEnemies(self, allMobs) {
+    #scanForEnemies(self, allMobs, player) {
         let bestScore = Infinity;
         let potentialTarget = null;
+        const allPotentialTargets = [...allMobs, player];
 
-        allMobs.forEach(mob => {
-            if (mob.conf.immat !== self.conf.immat && mob.stats.hp.current > 0 && self.conf.mesh.color !== mob.conf.mesh.color) {
-                const distance = self.mesh.position.distanceTo(mob.mesh.position);
+        allPotentialTargets.forEach(target => {
+            if (!target) return; // Skip if target is null
+
+            const isPlayer = target.type === 'player';
+            const targetId = isPlayer ? 'player' : target.conf.id;
+            const selfId = self.conf.id;
+
+            // Don't target self
+            if (targetId === selfId) return;
+
+            const targetHp = target.stats.hp.current;
+            const targetColor = isPlayer ? target.playerColor : target.conf.mesh.color;
+            const targetPosition = isPlayer ? target.playerGroupe.position : target.mesh.position;
+
+            // Check if target is an enemy and is alive
+            if (targetHp > 0 && self.conf.mesh.color !== targetColor) {
+                const distance = self.mesh.position.distanceTo(targetPosition);
                 if (distance < self.stats.perception) {
-                    const score = distance * mob.stats.hp.current; // Prioritize close and weak enemies
+                    const score = distance * targetHp; // Prioritize close and weak enemies
                     if (score < bestScore) {
                         bestScore = score;
-                        potentialTarget = mob;
+                        potentialTarget = target;
                     }
                 }
             }
@@ -71,8 +86,11 @@ class MobsIa {
     }
 
     #attack(self, target, game) {
-        const distance = self.mesh.position.distanceTo(target.mesh.position);
-        const direction = new THREE.Vector3().subVectors(target.mesh.position, self.mesh.position).normalize();
+        const isPlayer = target.type === 'player';
+        const targetPosition = isPlayer ? target.playerGroupe.position : target.mesh.position;
+
+        const distance = self.mesh.position.distanceTo(targetPosition);
+        const direction = new THREE.Vector3().subVectors(targetPosition, self.mesh.position).normalize();
 
         // Mobs will always face their target when attacking
         self.conf.theta.cur = Math.atan2(direction.y, direction.x);
@@ -96,7 +114,10 @@ class MobsIa {
     }
 
     #flee(self, from) {
-        const direction = new THREE.Vector3().subVectors(self.mesh.position, from.mesh.position).normalize();
+        const isPlayer = from.type === 'player';
+        const fromPosition = isPlayer ? from.playerGroupe.position : from.mesh.position;
+
+        const direction = new THREE.Vector3().subVectors(self.mesh.position, fromPosition).normalize();
         self.conf.position.x += direction.x * self.conf.speed;
         self.conf.position.y += direction.y * self.conf.speed;
         self.conf.theta.cur = Math.atan2(direction.y, direction.x);

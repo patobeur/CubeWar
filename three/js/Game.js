@@ -69,8 +69,13 @@ class Game {
 		this.foodItems = [];
 		this.MobManag = new Mobs()
 
+        this.maxMobs = 40;
+        this.initialMobs = 10;
+        this.spawnInterval = 5000; // ms
+        this.lastSpawnTime = 0;
+
 		this.allMobs = [];
-		for (let i = 0; i < 39; i++) {
+		for (let i = 0; i < this.initialMobs; i++) {
 			this.#spawnMob();
 		}
 		this.allMobs = this.MobManag.get_allMobs();
@@ -131,20 +136,20 @@ class Game {
 				let hit = false;
 				// Check for collision with mobs
 				this.allMobs.forEach(mob => {
-                    if (projectile.shooter !== mob && projectile.mesh.position.distanceTo(mob.mesh.position) < 1.0) {
+                    if (projectile.shooter !== mob && mob.stats.hp.current > 0 && projectile.mesh.position.distanceTo(mob.mesh.position) < 1.0) {
 						mob.stats.hp.current -= projectile.damage;
 						hit = true;
 					}
 				});
 
                 // check collision with player
-                if(projectile.shooter !== this.#PlayerManager && projectile.mesh.position.distanceTo(this.#PlayerManager.playerGroupe.position) < 1.0) {
+                if(projectile.shooter !== this.#PlayerManager && this.#PlayerManager.stats.hp.current > 0 && projectile.mesh.position.distanceTo(this.#PlayerManager.playerGroupe.position) < 1.0) {
                     this.#PlayerManager.stats.hp.current -= projectile.damage;
                     hit = true;
                 }
 
 				// Remove projectiles that are out of bounds or hit something
-				if (hit || projectile.mesh.position.length() > 100) {
+				if (hit || projectile.mesh.position.length() > 50) { // check distance from origin
 					this.#Scene.remove(projectile.mesh);
 				} else {
 					activeProjectiles.push(projectile);
@@ -172,25 +177,27 @@ class Game {
 					this.foodItems = this.foodItems.filter(food => !consumedFood.has(food));
 				}
 
-				let deadMobsCount = 0;
-				const aliveMobs = [];
+                // Handle dead mobs
+                const aliveMobs = this.allMobs.filter(mob => {
+                    if (mob.stats.hp.current <= 0) {
+                        this.#Scene.remove(mob.mesh);
+                        return false; // remove from list
+                    }
+                    return true; // keep in list
+                });
 
-				this.allMobs.forEach(mob => {
-					if (mob.stats.hp.current <= 0) {
-						deadMobsCount++;
-						this.#Scene.remove(mob.mesh);
-					} else {
-						aliveMobs.push(mob);
-					}
-				});
+                if (aliveMobs.length < this.allMobs.length) {
+                    this.allMobs = aliveMobs;
+                    this.MobManag.set_allMobs(aliveMobs);
+                }
 
-				for (let i = 0; i < deadMobsCount; i++) {
-					this.#spawnMob();
-				}
-
-				if (deadMobsCount > 0) {
-					this.allMobs = this.MobManag.get_allMobs();
-				}
+                // Progressive Spawning
+                const now = performance.now();
+                if (this.allMobs.length < this.maxMobs && (now - this.lastSpawnTime > this.spawnInterval)) {
+                    this.#spawnMob();
+                    this.allMobs = this.MobManag.get_allMobs();
+                    this.lastSpawnTime = now;
+                }
 			}
 		}
 		// this.#things.update(this.#pause, this.#WindowActive.get_isWindowActive())
