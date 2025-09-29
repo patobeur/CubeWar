@@ -2,6 +2,8 @@
 
 3d Cubes War
 
+[Cube War : le test](https://patobeur.github.io/CubeWar/)
+
 ## Ce jeu doit :
 
 -  être standalone ! et fontionner en local sans internet.
@@ -36,13 +38,13 @@
 
 -  Résistance : réduction des dégâts subis.
 
--  Comportements de base d’un MOB (IA simple)
+# Comportements de base d’un MOB (IA simple)
 
 ## 1. Exploration (Roamer)
 
 -  Si aucun ennemi détecté dans la zone de perception → se déplace aléatoirement.
 
--  Peut parfois s’arrêter pour "observer" ou "gratter le sol" (animation).
+-  Peut parfois s’arrêter pour "observer"
 
 ## 2. Détection
 
@@ -102,4 +104,8 @@
 
 ## menu de navigation top (fond flouttant le dessous) responsive.
 
--  un sous menu permet de modifier quelques réglages en temps réél)
+-  un sous menu permet de modifier quelques réglages en temps réél
+
+## l'attaque
+
+-  couleur 1 : tir des projectile a courte distance
