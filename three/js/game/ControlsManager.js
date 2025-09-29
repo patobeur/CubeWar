@@ -113,7 +113,6 @@ class ControlsManager {
 	#addKeyboardListeners() {
 		if (conslog) console.log('addKeyboardListeners')
 		document.onkeydown = (event) => {
-			console.log(event)
 			switch (event.key) {
 				case "&":
 					this.shoot1 = true;
@@ -148,7 +147,6 @@ class ControlsManager {
 					break;
 				case " ":
 					this.space = true;
-					console.log('space')
 					break;
 			}
 		}

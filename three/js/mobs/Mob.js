@@ -5,12 +5,13 @@ class Mob {
 	}
 	#init() {
 		this.ia = new MobsIa()
+		this.stats = new CubeStats(this.conf.stats);
 		this.#set_Divs()
 		this.#set_Mesh()
 		return this
 	}
-	update = () => {
-		this.ia.iaAction(this.conf)
+	update = (allMobs, foodItems, game) => {
+		this.ia.iaAction(this, allMobs, foodItems, game)
 		this.mesh.position.set(
 			this.conf.position.x,
 			this.conf.position.y,

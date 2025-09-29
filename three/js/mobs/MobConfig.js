@@ -103,6 +103,18 @@ class MobConfig {
 					color: 'yellow',
 					wireframe: false,
 
+				},
+				stats: {
+					hp: 100,
+					stamina: 100,
+					food: 100,
+					morale: 100,
+					strength: 10,
+					speed: 1,
+					perception: 5,
+					aggressiveness: 0.5,
+					intelligence: 0.5,
+					resistance: 0
 				}
 			}
 		}

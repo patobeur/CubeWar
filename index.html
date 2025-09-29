@@ -26,6 +26,7 @@
 		<script src="./three/communClass/Formula.js"></script>
 		<script src='./three/communClass/WindowActive.js'></script>
 		<!-- <script src='./three/communClass/chatbotFactory.js'></script> -->
+		<script src="./three/js/CubeStats.js"></script>
 		<script src='./three/js/game/PlayerManager.js'></script>
 		<script src='./three/js/game/SkillsManager.js'></script>
 
@@ -38,7 +39,8 @@
 		<script src="./three/js/objects/Pieces.js"></script>
 		 -->
 
-
+		<script src="./three/js/objects/Projectile.js"></script>
+		<script src="./three/js/objects/Food.js"></script>
 		<script src='./three/js/Mobs.js'></script>
 		<script src='./three/js/mobs/Mob.js'></script>
 		<script src='./three/js/mobs/MobConfig.js'></script>
@@ -102,12 +104,62 @@
 				color: white;
 			}
 
+			#top-menu {
+				position: absolute;
+				top: 0;
+				left: 0;
+				width: 100%;
+				padding: 10px;
+				background-color: rgba(0, 0, 0, 0.5);
+				backdrop-filter: blur(10px);
+				-webkit-backdrop-filter: blur(10px);
+				color: white;
+				z-index: 10;
+			}
+
+			#settings-panel {
+				display: none;
+				position: absolute;
+				top: 50px;
+				left: 10px;
+				background-color: rgba(0, 0, 0, 0.7);
+				padding: 10px;
+				border-radius: 5px;
+			}
+
+			#player-stats {
+				position: absolute;
+				bottom: 10px;
+				left: 10px;
+				color: white;
+				background-color: rgba(0, 0, 0, 0.5);
+				padding: 10px;
+				border-radius: 5px;
+			}
+
 		</style>
 
 	</head>
 
-	<body>
+	<body id="game">
+		<div id="top-menu">
+			<span>CubeWar</span>
+			<button onclick="toggleSettings()">Settings</button>
+		</div>
+		<div id="settings-panel">
+			<p>Settings Panel</p>
+			<!-- Add settings controls here -->
+		</div>
+		<div id="player-stats">
+			<p>HP: <span id="hp-value">100</span></p>
+			<p>Stamina: <span id="stamina-value">100</span></p>
+		</div>
 		<script>
+			function toggleSettings() {
+				const settingsPanel = document.getElementById('settings-panel');
+				settingsPanel.style.display = settingsPanel.style.display === 'none' ? 'block' : 'none';
+			}
+
 			// window.onload = function init() {
 			// 	const scene = new THREE.Scene();
 			// 	const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);

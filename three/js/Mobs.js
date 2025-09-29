@@ -15,7 +15,7 @@ class Mobs {
 		return this.get_allMobs()
 	}
 
-	addOne(nickname = false, mobType = 'mobs') {
+	addOne(nickname = false, mobType = 'mobs', color = null) {
 
 		this.mobConf = new MobConfig()
 
@@ -31,6 +31,10 @@ class Mobs {
 		conf.nickname = (!nickname === false) ? nickname : new String('UnNamed_') + conf.immat;
 		conf.theta.cur = this.#Formula.rand(0, 360)
 
+		if (color) {
+			conf.mesh.color = color;
+		}
+
 		// push a fresh mob with fresh conf to allMob arrray
 		let newmob = new Mob(conf)
 		this.#AllMobs.push(newmob)
@@ -43,10 +47,12 @@ class Mobs {
 	get_allMobs() {
 		return this.#AllMobs.length > 0 ? this.#AllMobs : false;
 	}
-	updateAllMobs() {
+	set_allMobs(mobs) {
+		this.#AllMobs = mobs;
+	}
+	updateAllMobs(foodItems, game) {
 		this.#AllMobs.forEach(mob => {
-			// console.log('Animate', mob.conf.position)
-			mob.update()
+			mob.update(this.#AllMobs, foodItems, game)
 		});
 	}
 
