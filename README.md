@@ -14,14 +14,14 @@
 
 -  Chaque cube (joueur, mob, allié, neutre) peut avoir les stats suivantes :
 
-## Statistiques principales
+### Statistiques principales
 
 -  Vie (HP) : quantité de points de vie.
 -  Énergie / Endurance (Stamina) : permet de courir, attaquer, esquiver.
 -  Nourriture / Faim : baisse lentement, influence la régénération.
 -  Moral / Courage : si trop bas, le cube peut fuir ou hésiter à attaquer.
 
-## Statistiques secondaires (influencent l’IA et les combats)
+### Statistiques secondaires (influencent l’IA et les combats)
 
 -  Force : dégâts physiques infligés.
 -  Vitesse : rapidité de déplacement.
@@ -91,3 +91,23 @@
 -  couleur 1 : tir des projectile a courte distance
 
 ## factions
+
+Chaque faction possede 3 type de models.
+
+Chaque type augmente avec l'experience
+
+-  au debut le joueur choisi sa couleur et son modele. en jeu il peut changer de modele en passant par un sous menu dans le menu de navigation en haut.
+
+Soigneur : rôle support.
+
+-  celui qui peut soigner à 5 unités autour de lui et de plus en plus loin avec son experience (sa monté en puissance). Soigne plus loin et plus fort avec l'experience. il tire aussi des projectile mais a 2 unité de distance seulement.
+
+Tireur : rôle DPS.
+
+-  celui qui tire des projectiles à 10 unités de distance (1.5 sec entre les tires pour l'instant). tire plus loin et plus fort avec l'experience.
+
+Protecteur : rôle tank.
+
+-  celui qui protege les autres en posant des murs infranchisable pendant 3 sec (10 sec entre les tires pour l'instant).il tire aussi des projectile mais à 5 unité de distance seulement.
+
+-  au debut le joueur choisi sa couleur et son modele. en jeu il peut changer de modele en passant par un sous menu dans le menu de navigation en haut.
