@@ -11,16 +11,29 @@ class MobConfig {
 
         if (!selectedRole) {
             console.error(`Role "${roleName}" not found in config.`);
-            return JSON.parse(JSON.stringify(this.config.base)); // Return a deep copy
+            return JSON.parse(JSON.stringify(this.config.base));
         }
 
-        // Create a new object by merging base and role-specific properties
-        const mergedConfig = { ...this.config.base, ...selectedRole };
+        // A simple custom deep merge function to safely combine configs
+        function mergeDeep(target, source) {
+            for (const key in source) {
+                // if the key is 'childs' and the source is `false`, overwrite it directly
+                if (key === 'childs' && source[key] === false) {
+                    target[key] = false;
+                }
+                else if (source[key] instanceof Object && key in target && target[key] instanceof Object) {
+                    mergeDeep(target[key], source[key]);
+                } else {
+                    target[key] = source[key];
+                }
+            }
+            return target;
+        }
 
-        // Specifically merge the 'mesh' object to avoid overwriting nested properties
-        mergedConfig.mesh = { ...this.config.base.mesh, ...selectedRole.mesh };
+        // Start with a deep copy of the base config
+        const config = JSON.parse(JSON.stringify(this.config.base));
 
-        return mergedConfig;
+        return mergeDeep(config, selectedRole);
     }
 
     _get_config() {
@@ -40,19 +53,10 @@ class MobConfig {
                 resistance: 0.1, // 10%
                 //-- Technical stats
                 lv: 0,
-                theta: {
-                    cur: 0,
-                    min: 0,
-                    max: 360,
-                },
+                theta: { cur: 0, min: 0, max: 360 },
                 ia: {
-                    changeAction: {
-                        cur: 0,
-                        min: 0,
-                        max: 30,
-                        choice: 0,
-                        lastAction: 0,
-                    },
+                    state: undefined,
+                    changeAction: { cur: 0, min: 0, max: 30, choice: 0, lastAction: 0 },
                     dirAmplitude: 360 / 8,
                 },
                 mesh: {
@@ -64,65 +68,62 @@ class MobConfig {
                         front: {
                             color: "black",
                             wireframe: false,
-                            size: { x: 0.5, y: 0.5, z: 0.5 },
+                            size: { x: 0.2, y: 0.4, z: 0.2 },
                             position: { x: 0, y: 0.5, z: 0 },
                         },
                     },
                 },
                 states: {
                     dead: false,
-                    collide: {
-                        changed: false,
-                        color: {
-                            saved: false,
-                            current: false,
-                        },
-                    },
+                    collide: { changed: false, color: { saved: false, current: false } },
                 },
             },
             roles: {
-                soigneur: {
-                    // Role: Support
+                soigneur: { // Support: a large cube with a long, thin smaller cube in front
                     attack_distance: 2,
-                    special_power: {
-                        name: "heal",
-                        range: 5, // units
-                        cooldown: 0,
-                    },
+                    special_power: { name: "heal", range: 5, cooldown: 0 },
                     mesh: {
-                        color: 0x00ff00, // Vert
+                        color: 0x00ff00, // Green
+                        size: { x: 1.2, y: 1.2, z: 1.2 }, // Large cube
+                        childs: {
+                            front: {
+                                size: { x: 0.2, y: 1.0, z: 0.2 }, // Long, thin front
+                                position: { x: 0, y: 0.8, z: 0 },
+                            },
+                        },
                     },
                 },
-                tireur: {
-                    // Role: DPS
+                tireur: { // Shooter: like the player (a cube and a smaller one in front)
                     attack_distance: 10,
-                    attack_cooldown: 1.5, // sec
+                    attack_cooldown: 1.5,
                     mesh: {
-                        color: 0xff0000, // Rouge
+                        color: 0xff0000, // Red
+                        // Inherits size and childs from base config
                     },
                 },
-                protecteur: {
-                    // Role: Tank
+                protecteur: { // Tank: a large, flat cube with a small cube in front
                     attack_distance: 5,
-                    special_power: {
-                        name: "wall",
-                        duration: 3, // sec
-                        cooldown: 10, // sec
-                    },
+                    special_power: { name: "wall", duration: 3, cooldown: 10 },
                     mesh: {
-                        color: 0x0000ff, // Bleu
+                        color: 0x0000ff, // Blue
+                        size: { x: 1.5, y: 1.5, z: 0.8 }, // Large, flat cube
+                        childs: {
+                            front: {
+                                position: { x: 0, y: 0.9, z: 0 },
+                            },
+                        },
                     },
                 },
                 cloud: {
                     speed: 0.2,
-                    perception: 0, // Ne détecte rien
-                    aggressivity: 0, // N'attaque jamais
+                    perception: 0,
+                    aggressivity: 0,
                     mesh: {
                         size: { x: 8, y: 8, z: 0.2 },
                         altitude: 10,
                         color: 0xffffff,
                         opacity: 0.6,
-                        childs: { front: false },
+                        childs: false, // No front piece for clouds
                     },
                 },
             },
