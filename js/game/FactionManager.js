@@ -32,9 +32,10 @@ class FactionManager {
     removeMobFromFaction(mob) {
         const factionName = mob.faction;
         if (factionName && this.factions[factionName]) {
-            const idToRemove = mob.conf.id;
+            const idToRemove = mob.conf ? mob.conf.id : mob.id; // Get ID from mob or player
+            if (!idToRemove) return;
+
             const index = this.factions[factionName].members.findIndex(member => {
-                // Member can be a mob (with .conf) or the player (without .conf)
                 const memberId = member.conf ? member.conf.id : member.id;
                 return memberId === idToRemove;
             });

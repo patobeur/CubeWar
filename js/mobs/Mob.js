@@ -86,7 +86,8 @@ class Mob {
 		this.mesh.add(this.mobMesh)
 
 		// FRONT
-		if (this.conf.mesh.childs.front != false) {
+		// Add a front piece only if it is explicitly defined as an object with a size property.
+		if (this.conf.mesh.childs && this.conf.mesh.childs.front && this.conf.mesh.childs.front.size) {
 			this.#add_Front()
 		}
 

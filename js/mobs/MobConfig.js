@@ -17,11 +17,7 @@ class MobConfig {
         // A simple custom deep merge function to safely combine configs
         function mergeDeep(target, source) {
             for (const key in source) {
-                // if the key is 'childs' and the source is `false`, overwrite it directly
-                if (key === 'childs' && source[key] === false) {
-                    target[key] = false;
-                }
-                else if (source[key] instanceof Object && key in target && target[key] instanceof Object) {
+                if (source[key] instanceof Object && key in target && target[key] instanceof Object) {
                     mergeDeep(target[key], source[key]);
                 } else {
                     target[key] = source[key];
@@ -123,7 +119,7 @@ class MobConfig {
                         altitude: 10,
                         color: 0xffffff,
                         opacity: 0.6,
-                        childs: false, // No front piece for clouds
+                        childs: { front: false }, // Explicitly disable the front piece
                     },
                 },
             },
