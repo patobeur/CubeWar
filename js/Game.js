@@ -18,6 +18,7 @@ class Game {
 	#SceneManager;
 
 	#PlayerManager;
+	#StatManager;
 	#FrontM;
 	#Formula;
 	#CHATFACTORY;
@@ -34,7 +35,7 @@ class Game {
 		this.#GConfig = new GameConfig();
 		if (conslog) console.log("this.#GConfig", this.#GConfig);
 
-		this.#FrontM = new FrontboardManager();
+		this.#StatManager = new StatManager();
 
 		this.#Formula = new Formula();
 
@@ -69,12 +70,12 @@ class Game {
 			0,
 			0,
 			this.#GConfig,
-			this.#FrontM,
+			this.#StatManager,
 			this.#Camera,
 			this.#Scene
 		);
 
-		this.#FrontM.initStats(this.#PlayerManager.stats);
+		this.#StatManager.initStats(this.#PlayerManager.stats);
 		this.#FactionManager.addMobToFaction(this.#PlayerManager, this.#PlayerManager.faction);
 		let playerPos = this.#PlayerManager.playerGroupe.position;
 
