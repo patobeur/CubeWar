@@ -2,7 +2,7 @@
 
 3d Cubes War
 
-[Cube War : le test](https://patobeur.github.io/CubeWar/)
+[-Cube War : le test](https://patobeur.github.io/CubeWar/)
 
 ## Ce jeu doit :
 
