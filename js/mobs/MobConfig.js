@@ -113,6 +113,18 @@ class MobConfig {
                         color: 0x0000ff, // Bleu
                     },
                 },
+                cloud: {
+                    speed: 0.2,
+                    perception: 0, // Ne détecte rien
+                    aggressivity: 0, // N'attaque jamais
+                    mesh: {
+                        size: { x: 8, y: 8, z: 0.2 },
+                        altitude: 10,
+                        color: 0xffffff,
+                        opacity: 0.6,
+                        childs: { front: false },
+                    },
+                },
             },
         };
     }

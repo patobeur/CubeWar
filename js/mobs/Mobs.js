@@ -15,10 +15,19 @@ class Mobs {
 
     addMobs(howmanyMobs) {
         const roles = ['soigneur', 'tireur', 'protecteur'];
+        const factionNames = Object.keys(this.#FactionManager.getFactions()).filter(name => name !== 'neutral');
+
         for (let i = 0; i < howmanyMobs; i++) {
             const randomRole = roles[this.#Formula.rand(0, roles.length - 1)];
-            const randomFaction = this.#FactionManager.getRandomFaction();
+            const randomFaction = factionNames[this.#Formula.rand(0, factionNames.length - 1)];
             this.addOne(randomRole, randomFaction);
+        }
+        return this.get_allMobs();
+    }
+
+    addClouds(howmany) {
+        for (let i = 0; i < howmany; i++) {
+            this.addOne('cloud', 'neutral');
         }
         return this.get_allMobs();
     }

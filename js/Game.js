@@ -87,7 +87,10 @@ class Game {
 
 		this.MobsManager = new Mobs(this.#GConfig, this.#FactionManager);
 
-		this.allMobs = this.MobsManager.addMobs(this.HowManyMobs);
+		this.MobsManager.addMobs(this.HowManyMobs);
+		this.MobsManager.addClouds(5); // Add 5 clouds
+		this.allMobs = this.MobsManager.get_allMobs();
+
 
 		this.allMobs.forEach((mob) => {
 			this.#Scene.add(mob.mesh);
@@ -131,15 +134,14 @@ class Game {
 					if (mob.conf.states.dead) return;
 
 					// Player vs Mob
-					if (player.faction !== mob.conf.faction) {
+					// Player vs Mob (non-neutral factions only)
+					if (player.faction !== 'neutral' && mob.conf.faction !== 'neutral' && player.faction !== mob.conf.faction) {
 						const distance = player.playerGroupe.position.distanceTo(mob.mesh.position);
 						if (distance <= 2.0) {
-							// Player attacks mob
 							if (!player.lastAttack || now - player.lastAttack > attackCooldown) {
 								mob.takeDamage(player.stats.force.current);
 								player.lastAttack = now;
 							}
-							// Mob attacks player
 							if (now - mob.conf.lastAttack > attackCooldown) {
 								player.takeDamage(mob.conf.force);
 								mob.conf.lastAttack = now;
@@ -147,13 +149,12 @@ class Game {
 						}
 					}
 
-					// Mob vs Mob
+					// Mob vs Mob (non-neutral factions only)
 					this.allMobs.forEach((otherMob) => {
 						if (mob === otherMob || otherMob.conf.states.dead) return;
-						if (mob.conf.faction !== otherMob.conf.faction) {
+						if (mob.conf.faction !== 'neutral' && otherMob.conf.faction !== 'neutral' && mob.conf.faction !== otherMob.conf.faction) {
 							const distance = mob.mesh.position.distanceTo(otherMob.mesh.position);
 							if (distance <= 2.0) {
-								// Mob attacks otherMob
 								if (now - mob.conf.lastAttack > attackCooldown) {
 									otherMob.takeDamage(mob.conf.force);
 									mob.conf.lastAttack = now;

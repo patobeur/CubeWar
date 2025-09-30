@@ -1,5 +1,5 @@
 class FactionManager {
-    constructor(factionNames = ['blue', 'red', 'green', 'yellow', 'purple']) {
+    constructor(factionNames = ['blue', 'red', 'green', 'yellow', 'purple', 'neutral']) {
         this.factions = {};
         factionNames.forEach(name => {
             this.factions[name] = {
@@ -32,7 +32,13 @@ class FactionManager {
     removeMobFromFaction(mob) {
         const factionName = mob.faction;
         if (factionName && this.factions[factionName]) {
-            const index = this.factions[factionName].members.findIndex(member => member.conf.id === mob.conf.id);
+            const idToRemove = mob.conf.id;
+            const index = this.factions[factionName].members.findIndex(member => {
+                // Member can be a mob (with .conf) or the player (without .conf)
+                const memberId = member.conf ? member.conf.id : member.id;
+                return memberId === idToRemove;
+            });
+
             if (index !== -1) {
                 this.factions[factionName].members.splice(index, 1);
             }
