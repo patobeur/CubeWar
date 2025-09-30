@@ -48,10 +48,12 @@ class MobsIa {
     _findTarget(conf, player, allMobs) {
         const perceptionRange = conf.perception;
         let potentialTargets = [];
+        const mobPositionVec = new THREE.Vector3(conf.position.x, conf.position.y, conf.position.z);
+
 
         // Check player
-        if (player.faction !== conf.faction) {
-            const distance = this.Formula.getDistance(conf.position, player.playerGroupe.position);
+        if (player.faction !== conf.faction && player.stats.hp.current > 0) {
+            const distance = mobPositionVec.distanceTo(player.playerGroupe.position);
             if (distance <= perceptionRange) {
                 potentialTargets.push({ target: player, distance: distance });
             }
@@ -60,7 +62,7 @@ class MobsIa {
         // Check other mobs
         allMobs.forEach(mob => {
             if (mob.conf.id !== conf.id && mob.conf.faction !== conf.faction && !mob.conf.states.dead) {
-                const distance = this.Formula.getDistance(conf.position, mob.mesh.position);
+                const distance = mobPositionVec.distanceTo(mob.mesh.position);
                 if (distance <= perceptionRange) {
                     potentialTargets.push({ target: mob, distance: distance });
                 }

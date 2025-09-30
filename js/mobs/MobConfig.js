@@ -6,13 +6,21 @@ class MobConfig {
     }
 
     get_(role = false) {
-        const selectedRole = this.config.roles[role || this.role];
+        const roleName = role || this.role;
+        const selectedRole = this.config.roles[roleName];
+
         if (!selectedRole) {
-            console.error(`Role "${role || this.role}" not found in config.`);
-            return { ...this.config.base };
+            console.error(`Role "${roleName}" not found in config.`);
+            return JSON.parse(JSON.stringify(this.config.base)); // Return a deep copy
         }
-        // Merge base config with role-specific overrides
-        return { ...this.config.base, ...selectedRole };
+
+        // Create a new object by merging base and role-specific properties
+        const mergedConfig = { ...this.config.base, ...selectedRole };
+
+        // Specifically merge the 'mesh' object to avoid overwriting nested properties
+        mergedConfig.mesh = { ...this.config.base.mesh, ...selectedRole.mesh };
+
+        return mergedConfig;
     }
 
     _get_config() {
