@@ -4,15 +4,15 @@ class PlayerManager {
 	#PConfig
 	#Camera
 	#StatManager
-	constructor(x = 0, y = 0, z = 0, GConfig, StatManager, Camera, Scene) {
+	constructor(x = 0, y = 0, z = 0, GConfig, StatManager, Camera, Scene, faction = 'blue', role = 'protecteur') {
 		this.scene = Scene
 
 		this.type = 'player';
 		this.#GConfig = GConfig;
-		this.#PConfig = new PlayerConfig();
+		this.#PConfig = new PlayerConfig(role);
 		this.stats = this.#PConfig.get_stats();
 		this.id = 'Player_1'; // Unique ID for the player
-		this.faction = 'blue'; // Default faction
+		this.faction = faction; // Default faction
 		this.lastAttack = 0; // Timestamp of the last attack
 
 

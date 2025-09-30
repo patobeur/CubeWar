@@ -37,6 +37,7 @@ class MobConfig {
             base: {
                 //-- Statistiques principales
                 hp: 100,
+                maxHp: 100,
                 stamina: 100,
                 food: 100,
                 moral: 50,

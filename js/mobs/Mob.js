@@ -5,7 +5,20 @@ class Mob {
 	}
 	#init() {
 		this.conf.lastAttack = 0; // Timestamp of the last attack
-		this.ia = new MobsIa()
+		switch (this.conf.role) {
+			case 'soigneur':
+				this.ia = new HealerIa();
+				break;
+			case 'tireur':
+				this.ia = new RangerIa();
+				break;
+			case 'protecteur':
+				this.ia = new ProtectorIa();
+				break;
+			default:
+				this.ia = new BaseIa();
+				break;
+		}
 		this.#set_Divs()
 		this.#set_Mesh()
 		return this
