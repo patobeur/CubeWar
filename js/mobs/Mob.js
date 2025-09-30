@@ -4,15 +4,29 @@ class Mob {
 		this.#init()
 	}
 	#init() {
-		this.conf.state = { dead: 0 }
+		this.conf.lastAttack = 0; // Timestamp of the last attack
 		this.ia = new MobsIa()
 		this.#set_Divs()
 		this.#set_Mesh()
 		return this
 	}
-	update = () => {
 
-		this.ia.iaAction(this.conf)
+	takeDamage(amount) {
+		if (this.conf.states.dead) return;
+
+		this.conf.hp -= amount;
+		if (this.conf.hp <= 0) {
+			this.conf.hp = 0;
+			this.conf.states.dead = true;
+			console.log(`${this.conf.nickname} has been defeated.`);
+			this.mesh.visible = false; // Hide the mob
+		}
+	}
+
+	update = (player, allMobs) => {
+		if (this.conf.states.dead) return; // Don't update dead mobs
+
+		this.ia.iaAction(this.conf, player, allMobs);
 
 		this.mesh.position.set(
 			this.conf.position.x,
