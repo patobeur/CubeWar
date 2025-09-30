@@ -4,22 +4,39 @@ class Mob {
 		this.#init()
 	}
 	#init() {
-		this.conf.state = { dead: 0 }
+		this.conf.lastAttack = 0; // Timestamp of the last attack
 		this.ia = new MobsIa()
 		this.#set_Divs()
 		this.#set_Mesh()
 		return this
 	}
-	update = () => {
 
-		this.ia.iaAction(this.conf)
+	takeDamage(amount) {
+		if (this.conf.states.dead) return;
+
+		this.conf.hp -= amount;
+		if (this.conf.hp <= 0) {
+			this.conf.hp = 0;
+			this.conf.states.dead = true;
+			console.log(`${this.conf.nickname} has been defeated.`);
+			this.mesh.visible = false; // Hide the mob
+		}
+	}
+
+	update = (player, allMobs) => {
+		if (this.conf.states.dead) return; // Don't update dead mobs
+
+		this.ia.iaAction(this.conf, player, allMobs);
 
 		this.mesh.position.set(
 			this.conf.position.x,
 			this.conf.position.y,
 			this.conf.position.z
 		);
-		this.mesh.rotation.z = this.conf.theta.cur
+		// The AI calculates theta where 0 is to the right (+X).
+		// The mob's "front" is its +Y axis. To align +Y with the angle,
+		// we subtract 90 degrees (PI/2) from the angle.
+		this.mesh.rotation.z = this.conf.theta.cur - (Math.PI / 2);
 		this.#update_BBox()
 
 
@@ -69,7 +86,8 @@ class Mob {
 		this.mesh.add(this.mobMesh)
 
 		// FRONT
-		if (this.conf.mesh.childs.front != false) {
+		// Add a front piece only if it is explicitly defined as an object with a size property.
+		if (this.conf.mesh.childs && this.conf.mesh.childs.front && this.conf.mesh.childs.front.size) {
 			this.#add_Front()
 		}
 

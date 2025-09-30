@@ -1,129 +1,128 @@
 class MobConfig {
-	config;
-	constructor(typeNum = 1) {
-		this.typeNum = typeNum;
-		this.config = this.#get_config();
-	}
-	get_(parent, value = false) {
-		let confParent = this.config[parent] ?? false;
-		let confValue = confParent[value]
-			? confParent[value]
-			: confParent
-			? confParent
-			: false;
-		return { ...confValue };
-	}
-	#get_config() {
-		const config = {
-			mobs: {
-				lv: 0,
-				speed: 1,
-				theta: {
-					cur: 0,
-					min: 0,
-					max: 360,
-				},
-				ia: {
-					// can change mind every x milisec
-					changeAction: {
-						cur: 0,
-						min: 0,
-						max: 30,
-						choice: 0,
-						lastAction: 0,
-					},
-					dirAmplitude: 360 / 8,
-				},
+    config;
+    constructor(role = 'tireur') {
+        this.role = role;
+        this.config = this._get_config();
+    }
 
-				mesh: {
-					size: { x: 1, y: 1, z: 1 },
-					altitude: 0,
-					color: "yellow",
-					wireframe: false,
-					childs: {
-						front: {
-							color: "black",
-							wireframe: false,
-							size: { x: 0.5, y: 0.5, z: 0.5 },
-							position: { x: 0, y: 0.5, z: 0 }, // from parent center
-						},
-					},
-				},
-				states: {
-					dead: false,
-					collide: {
-						changed: false,
-						color: {
-							saved: false,
-							current: false,
-						},
-					},
-				},
-			},
-		};
+    get_(role = false) {
+        const roleName = role || this.role;
+        const selectedRole = this.config.roles[roleName];
 
-		if (this.typeNum === 0) {
-			config.mobs.speed = 1;
-			config.mobs.ia.dirAmplitude = 0;
-		}
-		if (this.typeNum === 1) {
-			// BLACK SPEEDER
-			config.mobs.mesh.color = "black";
-			config.mobs.speed = 6;
-			config.mobs.mesh.size = { x: 0.5, y: 1, z: 0.5 };
-			config.mobs.ia.changeAction.max = 10;
-			config.mobs.ia.dirAmplitude = 1;
-			config.mobs.mesh.childs = {
-				front: {
-					color: "red",
-					wireframe: false,
-					size: { x: 0.25, y: 0.25, z: 0.25 },
-					position: { x: 0, y: 0.125, z: 0 }, // from parent center
-				},
-			};
-		}
+        if (!selectedRole) {
+            console.error(`Role "${roleName}" not found in config.`);
+            return JSON.parse(JSON.stringify(this.config.base));
+        }
 
-		if (this.typeNum === 2) {
-			// BIG PAPA
-			config.mobs.mesh.color = "green";
-			config.mobs.speed = 3;
-			config.mobs.mesh.size = { x: 1.5, y: 1.5, z: 1.5 };
-			config.mobs.ia.changeAction.max = 30;
-			config.mobs.mesh.childs = {
-				front: {
-					color: "red",
-					wireframe: false,
-					size: { x: 0.75, y: 0.75, z: 0.75 },
-					position: { x: 0, y: 0.5, z: 0 }, // from parent center
-				},
-			};
-		}
+        // A simple custom deep merge function to safely combine configs
+        function mergeDeep(target, source) {
+            for (const key in source) {
+                if (source[key] instanceof Object && key in target && target[key] instanceof Object) {
+                    mergeDeep(target[key], source[key]);
+                } else {
+                    target[key] = source[key];
+                }
+            }
+            return target;
+        }
 
-		if (this.typeNum === 3 || this.typeNum === 4) {
-			// REGULAR MANTA
-			config.mobs.mesh.color = 0x00ff20;
-			config.mobs.speed = 1;
-			config.mobs.mesh.size = { x: 4, y: 4, z: 0.3 };
-			config.mobs.ia.changeAction.max = 50;
-			config.mobs.mesh.altitude = 10;
-			config.mobs.mesh.opacity = 0.8;
-			config.mobs.mesh.childs = {
-				front: false,
-			};
-		}
-		if (this.typeNum > 4) {
-			// BIG MANTA
-			config.mobs.mesh.color = 0xff0020;
-			config.mobs.speed = 1;
-			config.mobs.mesh.size = { x: 8, y: 8, z: 0.2 };
-			config.mobs.mesh.altitude = 10;
-			config.mobs.ia.changeAction.max = 50;
-			config.mobs.ia.dirAmplitude = 0;
-			config.mobs.mesh.opacity = 0.6;
-			config.mobs.mesh.childs = {
-				front: false,
-			};
-		}
-		return { ...config };
-	}
+        // Start with a deep copy of the base config
+        const config = JSON.parse(JSON.stringify(this.config.base));
+
+        return mergeDeep(config, selectedRole);
+    }
+
+    _get_config() {
+        return {
+            base: {
+                //-- Statistiques principales
+                hp: 100,
+                stamina: 100,
+                food: 100,
+                moral: 50,
+                //-- Statistiques secondaires
+                force: 10,
+                speed: 1.0, // (case/sec)
+                perception: 5, // (cases)
+                aggressivity: 0.5, // 50%
+                intelligence: 'medium',
+                resistance: 0.1, // 10%
+                //-- Technical stats
+                lv: 0,
+                theta: { cur: 0, min: 0, max: 360 },
+                ia: {
+                    state: undefined,
+                    changeAction: { cur: 0, min: 0, max: 30, choice: 0, lastAction: 0 },
+                    dirAmplitude: 360 / 8,
+                },
+                mesh: {
+                    size: { x: 1, y: 1, z: 1 },
+                    altitude: 0,
+                    color: "yellow",
+                    wireframe: false,
+                    childs: {
+                        front: {
+                            color: "black",
+                            wireframe: false,
+                            size: { x: 0.2, y: 0.4, z: 0.2 },
+                            position: { x: 0, y: 0.5, z: 0 },
+                        },
+                    },
+                },
+                states: {
+                    dead: false,
+                    collide: { changed: false, color: { saved: false, current: false } },
+                },
+            },
+            roles: {
+                soigneur: { // Support: a large cube with a long, thin smaller cube in front
+                    attack_distance: 2,
+                    special_power: { name: "heal", range: 5, cooldown: 0 },
+                    mesh: {
+                        color: 0x00ff00, // Green
+                        size: { x: 1.2, y: 1.2, z: 1.2 }, // Large cube
+                        childs: {
+                            front: {
+                                size: { x: 0.2, y: 1.0, z: 0.2 }, // Long, thin front
+                                position: { x: 0, y: 0.8, z: 0 },
+                            },
+                        },
+                    },
+                },
+                tireur: { // Shooter: like the player (a cube and a smaller one in front)
+                    attack_distance: 10,
+                    attack_cooldown: 1.5,
+                    mesh: {
+                        color: 0xff0000, // Red
+                        // Inherits size and childs from base config
+                    },
+                },
+                protecteur: { // Tank: a large, flat cube with a small cube in front
+                    attack_distance: 5,
+                    special_power: { name: "wall", duration: 3, cooldown: 10 },
+                    mesh: {
+                        color: 0x0000ff, // Blue
+                        size: { x: 1.5, y: 1.5, z: 0.8 }, // Large, flat cube
+                        childs: {
+                            front: {
+                                position: { x: 0, y: 0.9, z: 0 },
+                            },
+                        },
+                    },
+                },
+                cloud: {
+                    speed: 0.2,
+                    perception: 0,
+                    aggressivity: 0,
+                    mesh: {
+                        size: { x: 8, y: 8, z: 0.2 },
+                        altitude: 10,
+                        color: 0xffffff,
+                        opacity: 0.6,
+                        childs: { front: false }, // Explicitly disable the front piece
+                    },
+                },
+            },
+        };
+    }
 }

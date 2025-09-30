@@ -21,6 +21,7 @@ class Game {
 	#FrontM;
 	#Formula;
 	#CHATFACTORY;
+	#FactionManager;
 	constructor() {
 		this.HowManyMobs = 24; // 5 de chaque faction ( -1 dans la faction que le joueur aura choisi)
 		this.#WindowActive = new WindowActive("Flat2");
@@ -33,31 +34,7 @@ class Game {
 		this.#GConfig = new GameConfig();
 		if (conslog) console.log("this.#GConfig", this.#GConfig);
 
-		this.stats = {
-			hp: {
-				name: "Hit Point",
-				current: 25,
-				max: 100,
-				regen: 0.1,
-				backgroundColor: "rgba(250, 59, 9, 0.644)",
-			},
-			energy: {
-				name: "Energy",
-				current: 100,
-				max: 100,
-				regen: 1.5,
-				backgroundColor: "rgba(9, 223, 20, 0.644)",
-			},
-			def: {
-				name: "defense",
-				current: 1,
-				max: 100,
-				regen: 3,
-				backgroundColor: "rgba(9, 59, 223, 0.644)",
-			},
-		};
-
-		this.#FrontM = new FrontboardManager(this.stats);
+		this.#FrontM = new FrontboardManager();
 
 		this.#Formula = new Formula();
 
@@ -85,6 +62,8 @@ class Game {
 
 		// --
 
+		this.#FactionManager = new FactionManager();
+
 		this.#PlayerManager = new PlayerManager(
 			0,
 			0,
@@ -95,6 +74,8 @@ class Game {
 			this.#Scene
 		);
 
+		this.#FrontM.initStats(this.#PlayerManager.stats);
+		this.#FactionManager.addMobToFaction(this.#PlayerManager, this.#PlayerManager.faction);
 		let playerPos = this.#PlayerManager.playerGroupe.position;
 
 		// this.#PlayerManager.playerGroupe.add(this.#Camera)
@@ -104,9 +85,12 @@ class Game {
 
 		// this.#CHATFACTORY = new ChatBotFactory();
 
-		this.MobsManager = new Mobs(this.#GConfig);
+		this.MobsManager = new Mobs(this.#GConfig, this.#FactionManager);
 
-		this.allMobs = this.MobsManager.addMobs(this.HowManyMobs, "mobs");
+		this.MobsManager.addMobs(this.HowManyMobs);
+		this.MobsManager.addClouds(5); // Add 5 clouds
+		this.allMobs = this.MobsManager.get_allMobs();
+
 
 		this.allMobs.forEach((mob) => {
 			this.#Scene.add(mob.mesh);
@@ -141,47 +125,58 @@ class Game {
 			//if (this.#OrbitControls) this.#OrbitControls.update(); // only if controls.enableDamping = true || controls.autoRotate = true
 
 			if (this.allMobs) {
-				// this.MobsManager.updateAllMobs()
-				let i = 0;
+				const player = this.#PlayerManager;
+				const now = Date.now();
+				const attackCooldown = 1000; // 1 second
+
+				// --- Combat Phase ---
 				this.allMobs.forEach((mob) => {
-					// console.log(mob)
-					let dist = mob.bbox.distanceToPoint(
-						this.#PlayerManager.playerGroupe.position
-					);
-					// console.log(mob.conf.immat, dist)
-					if (dist > 2) {
-						if (mob.conf.states.collide) {
-							if (mob.conf.states.collide.changed === true) {
-								console.log(
-									"<-- fin de collision avec " + mob.conf.nickname
-								);
-								mob.mobMesh.material.color =
-									mob.conf.states.collide.color.saved;
-								mob.conf.states.collide.changed = false;
-								// document.getElementById(['mob_' + i]).textContent = Math.floor(dist * 10) / 10
-								mob.conf.states.collide.color.saved = false;
-								mob.conf.states.collide.color.current = false;
+					if (mob.conf.states.dead) return;
+
+					// Player vs Mob
+					// Player vs Mob (non-neutral factions only)
+					if (player.faction !== 'neutral' && mob.conf.faction !== 'neutral' && player.faction !== mob.conf.faction) {
+						const distance = player.playerGroupe.position.distanceTo(mob.mesh.position);
+						if (distance <= 2.0) {
+							if (!player.lastAttack || now - player.lastAttack > attackCooldown) {
+								mob.takeDamage(player.stats.force.current);
+								player.lastAttack = now;
+							}
+							if (now - mob.conf.lastAttack > attackCooldown) {
+								player.takeDamage(mob.conf.force);
+								mob.conf.lastAttack = now;
 							}
 						}
-						// console.log(this.#PlayerManager.PlayerMesh.material.color = 'red')
-					} else {
-						// BOOOOOOM
-						if (mob.conf.states.collide.changed === false) {
-							mob.conf.states.collide.color.saved =
-								mob.mobMesh.material.color;
-							mob.conf.states.collide.changed = true;
-							// document.getElementById(['mob_' + i]).textContent = Math.floor(dist * 10) / 10
-							mob.mobMesh.material.color =
-								this.#PlayerManager.PlayerMesh.material.color;
-							//{ r: 1, g: 1, b: 1 }
-							console.log(
-								"--> début de collision avec " + mob.conf.nickname
-							);
-						}
 					}
-					mob.update();
-					i++;
+
+					// Mob vs Mob (non-neutral factions only)
+					this.allMobs.forEach((otherMob) => {
+						if (mob === otherMob || otherMob.conf.states.dead) return;
+						if (mob.conf.faction !== 'neutral' && otherMob.conf.faction !== 'neutral' && mob.conf.faction !== otherMob.conf.faction) {
+							const distance = mob.mesh.position.distanceTo(otherMob.mesh.position);
+							if (distance <= 2.0) {
+								if (now - mob.conf.lastAttack > attackCooldown) {
+									otherMob.takeDamage(mob.conf.force);
+									mob.conf.lastAttack = now;
+								}
+							}
+						}
+					});
 				});
+
+				// --- AI and Position Update Phase ---
+				this.allMobs.forEach((mob) => {
+					mob.update(player, this.allMobs);
+				});
+
+				// --- Cleanup Phase ---
+				const deadMobs = this.allMobs.filter(mob => mob.conf.states.dead);
+				deadMobs.forEach(mob => {
+					this.#Scene.remove(mob.mesh);
+					this.#FactionManager.removeMobFromFaction(mob);
+				});
+
+				this.allMobs = this.allMobs.filter(mob => !mob.conf.states.dead);
 			}
 		}
 		// this.#things.update(this.#pause, this.#WindowActive.get_isWindowActive())

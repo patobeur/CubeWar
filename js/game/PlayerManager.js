@@ -5,16 +5,15 @@ class PlayerManager {
 	#Camera
 	#FrontM
 	constructor(x = 0, y = 0, z = 0, GConfig, FrontM, Camera, Scene) {
-		this.stats = {
-			hp: { name: 'Hit Point', current: 25, max: 100, regen: .1, backgroundColor: 'rgba(250, 59, 9, 0.644)' },
-			energy: { name: 'Energy', current: 100, max: 100, regen: 1.5, backgroundColor: 'rgba(9, 223, 20, 0.644)' },
-			def: { name: 'defense', current: 1, max: 100, regen: 3, backgroundColor: 'rgba(9, 59, 223, 0.644)' }
-		}
 		this.scene = Scene
 
 		this.type = 'player';
 		this.#GConfig = GConfig;
 		this.#PConfig = new PlayerConfig();
+		this.stats = this.#PConfig.get_stats();
+		this.id = 'Player_1'; // Unique ID for the player
+		this.faction = 'blue'; // Default faction
+		this.lastAttack = 0; // Timestamp of the last attack
 
 
 
@@ -41,12 +40,6 @@ class PlayerManager {
 
 		this.damaged = false;
 
-		this.speed = 0;
-		this.maxSpeed = .1
-		this.maxRevSpeed = this.maxSpeed
-		this.friction = this.maxSpeed / 20;
-		this.acceleration = .01;
-
 		this.largeur = 1;
 		this.longueur = 1;
 		this.hauteur = 1;
@@ -71,6 +64,19 @@ class PlayerManager {
 		this.#init_camera();
 
 	}
+
+	takeDamage(amount) {
+		if (this.stats.hp.current <= 0) return;
+
+		this.stats.hp.current -= amount;
+		this.#FrontM.refresh('hp', this.stats.hp.current);
+
+		if (this.stats.hp.current <= 0) {
+			console.log("Player has been defeated.");
+			// Handle player death (e.g., show a game over screen)
+		}
+	}
+
 	#init_camera() {
 
 		this.#Camera.position.set(
@@ -201,7 +207,7 @@ class PlayerManager {
 	}
 	#playerMoveActions() {
 		if (this.ControlsM) {
-			let speed = this.maxSpeed;
+			const speed = this.stats.speed.current / 10; // Use configured speed with scaling
 			this.position.thetaDeg = this.ControlsM.thetaDeg
 			this.playerGroupe.rotation.z = THREE.Math.degToRad(this.position.thetaDeg);
 			// console.log('rot deg:', this.ControlsM.thetaDeg)
@@ -254,10 +260,10 @@ class PlayerManager {
 				// console.log(skill.birthDay - new Date())
 				// console.log(new Date())
 				// console.log(skill)
-				if (skill.skillDatas.energyCost < this.stats.energy.current) {
-					this.stats.energy.current -= skill.skillDatas.energyCost;
+				if (skill.skillDatas.energyCost < this.stats.stamina.current) {
+					this.stats.stamina.current -= skill.skillDatas.energyCost;
 					if (this.#FrontM) {
-						this.#FrontM.refresh('energy', this.stats.energy.current)
+						this.#FrontM.refresh('stamina', this.stats.stamina.current)
 					}
 					skill.init();
 				}
