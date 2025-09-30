@@ -12,6 +12,7 @@ class BaseIa {
             conf.ia.isMoving = true;
             conf.ia.target = null;
             conf.theta.cur = this.Formula.degToRad(conf.theta.cur); // Work in radians
+            conf.isTargetingPlayer = false; // Initialize the new property
         }
 
         // --- State Transitions ---
@@ -24,6 +25,7 @@ class BaseIa {
             if (isTargetInvalid) {
                 conf.ia.state = 'exploring';
                 conf.ia.target = null;
+                conf.isTargetingPlayer = false; // Reset when target is lost
             }
         }
 
@@ -66,8 +68,13 @@ class BaseIa {
 
         if (potentialTargets.length > 0) {
             potentialTargets.sort((a, b) => a.distance - b.distance);
-            conf.ia.target = potentialTargets[0].target;
+            const bestTarget = potentialTargets[0].target;
+            conf.ia.target = bestTarget;
             conf.ia.state = 'attacking';
+            // Set a flag if the target is the player
+            conf.isTargetingPlayer = (bestTarget.type === 'player');
+        } else {
+            conf.isTargetingPlayer = false;
         }
     }
 
@@ -93,6 +100,8 @@ class BaseIa {
         const speed = conf.speed;
         conf.position.x += Math.cos(conf.theta.cur) * speed;
         conf.position.y += Math.sin(conf.theta.cur) * speed;
+
+        this._applyBoundary(conf);
     }
 
     _explore(conf) {
@@ -128,11 +137,35 @@ class BaseIa {
         conf.position.x += Math.cos(conf.theta.cur) * speed;
         conf.position.y += Math.sin(conf.theta.cur) * speed;
 
-        // World limits (wrapping)
+        const hitWall = this._applyBoundary(conf);
+        if (hitWall) {
+            // Force a change of direction upon hitting a wall
+            this._chooseNewDirection(conf);
+        }
+    }
+
+    _applyBoundary(conf) {
         const floorSize = conf.floor.size;
-        if (conf.position.x < -floorSize.x / 2) conf.position.x = floorSize.x / 2;
-        if (conf.position.x > floorSize.x / 2) conf.position.x = -floorSize.x / 2;
-        if (conf.position.y < -floorSize.y / 2) conf.position.y = floorSize.y / 2;
-        if (conf.position.y > floorSize.y / 2) conf.position.y = -floorSize.y / 2;
+        const halfX = floorSize.x / 2;
+        const halfY = floorSize.y / 2;
+        let hitWall = false;
+
+        if (conf.position.x < -halfX) {
+            conf.position.x = -halfX;
+            hitWall = true;
+        } else if (conf.position.x > halfX) {
+            conf.position.x = halfX;
+            hitWall = true;
+        }
+
+        if (conf.position.y < -halfY) {
+            conf.position.y = -halfY;
+            hitWall = true;
+        } else if (conf.position.y > halfY) {
+            conf.position.y = halfY;
+            hitWall = true;
+        }
+
+        return hitWall;
     }
 }
