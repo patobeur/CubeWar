@@ -4,29 +4,28 @@ class MobsIa {
     }
 
     iaAction(conf, player, allMobs) {
-        // Initialize state if it doesn't exist
-        if (!conf.ia.state) {
+        // On initialization, convert the mob's starting angle (degrees) to radians.
+        if (conf.ia.state === undefined) {
             conf.ia.state = 'exploring';
             conf.ia.actionTimer = 0;
-            conf.ia.actionDuration = this.Formula.rand(2, 5) * 60; // 2-5 seconds
+            conf.ia.actionDuration = this.Formula.rand(2, 5) * 60; // in frames
             conf.ia.isMoving = true;
             conf.ia.target = null;
+            conf.theta.cur = this.Formula.degToRad(conf.theta.cur); // Work in radians
         }
 
         // --- State Transitions ---
-        // If exploring, always look for a target
         if (conf.ia.state === 'exploring') {
             this._findTarget(conf, player, allMobs);
-        }
+        } else if (conf.ia.state === 'attacking') {
+            const target = conf.ia.target;
+            const isTargetInvalid = !target || (target.conf ? target.conf.states.dead : target.stats.hp.current <= 0);
 
-        // If attacking, check if the target is still valid
-        if (conf.ia.state === 'attacking') {
-            if (!conf.ia.target || conf.ia.target.conf?.states?.dead || conf.ia.target.stats?.hp.current <= 0) {
+            if (isTargetInvalid) {
                 conf.ia.state = 'exploring';
                 conf.ia.target = null;
             }
         }
-
 
         // --- State Actions ---
         switch (conf.ia.state) {
@@ -35,9 +34,6 @@ class MobsIa {
                 break;
             case 'attacking':
                 this._attack(conf);
-                break;
-            case 'fleeing':
-                // To be implemented
                 break;
             default:
                 conf.ia.state = 'exploring';
@@ -50,9 +46,8 @@ class MobsIa {
         let potentialTargets = [];
         const mobPositionVec = new THREE.Vector3(conf.position.x, conf.position.y, conf.position.z);
 
-
         // Check player
-        if (player.faction !== conf.faction && player.stats.hp.current > 0) {
+        if (player.faction !== 'neutral' && conf.faction !== 'neutral' && player.faction !== conf.faction && player.stats.hp.current > 0) {
             const distance = mobPositionVec.distanceTo(player.playerGroupe.position);
             if (distance <= perceptionRange) {
                 potentialTargets.push({ target: player, distance: distance });
@@ -61,7 +56,7 @@ class MobsIa {
 
         // Check other mobs
         allMobs.forEach(mob => {
-            if (mob.conf.id !== conf.id && mob.conf.faction !== conf.faction && !mob.conf.states.dead) {
+            if (mob.conf.id !== conf.id && mob.conf.faction !== 'neutral' && !mob.conf.states.dead && mob.conf.faction !== conf.faction) {
                 const distance = mobPositionVec.distanceTo(mob.mesh.position);
                 if (distance <= perceptionRange) {
                     potentialTargets.push({ target: mob, distance: distance });
@@ -70,7 +65,6 @@ class MobsIa {
         });
 
         if (potentialTargets.length > 0) {
-            // Target the closest enemy
             potentialTargets.sort((a, b) => a.distance - b.distance);
             conf.ia.target = potentialTargets[0].target;
             conf.ia.state = 'attacking';
@@ -78,31 +72,27 @@ class MobsIa {
     }
 
     _attack(conf) {
-        if (!conf.ia.target) {
+        const target = conf.ia.target;
+        if (!target) {
             conf.ia.state = 'exploring';
             return;
         }
 
-        // Move towards the target
-        const targetPosition = conf.ia.target.playerGroupe?.position || conf.ia.target.mesh?.position;
+        const targetPosition = target.playerGroupe?.position || target.mesh?.position;
         if (!targetPosition) {
             conf.ia.state = 'exploring';
             return;
         }
 
-        const angle = Math.atan2(
-            targetPosition.y - conf.position.y,
-            targetPosition.x - conf.position.x
-        );
+        // Correctly calculate the angle towards the target
+        const dy = targetPosition.y - conf.position.y;
+        const dx = targetPosition.x - conf.position.x;
+        conf.theta.cur = Math.atan2(dy, dx);
 
-        // Convert angle to degrees for consistency with existing logic if needed
-        // For now, using radians directly for movement is more efficient
+        // Move towards the target
         const speed = conf.speed;
-        conf.position.x += Math.cos(angle) * speed;
-        conf.position.y += Math.sin(angle) * speed;
-
-        // Update rotation to face the target
-        conf.theta.cur = angle * (180 / Math.PI) - 90; // Adjusting for model orientation
+        conf.position.x += Math.cos(conf.theta.cur) * speed;
+        conf.position.y += Math.sin(conf.theta.cur) * speed;
     }
 
     _explore(conf) {
@@ -110,10 +100,9 @@ class MobsIa {
 
         if (conf.ia.actionTimer >= conf.ia.actionDuration) {
             conf.ia.actionTimer = 0;
-            conf.ia.actionDuration = this.Formula.rand(2, 5) * 60; // New duration
+            conf.ia.actionDuration = this.Formula.rand(2, 5) * 60;
 
-            const willMove = Math.random() > 0.3;
-            if (willMove) {
+            if (Math.random() > 0.3) {
                 conf.ia.isMoving = true;
                 this._chooseNewDirection(conf);
             } else {
@@ -128,15 +117,18 @@ class MobsIa {
     }
 
     _chooseNewDirection(conf) {
-        const turnAngle = this.Formula.rand(-45, 45);
+        // Turn by a random amount in radians
+        const turnAngle = this.Formula.degToRad(this.Formula.rand(-45, 45));
         conf.theta.cur += turnAngle;
     }
 
     _keepMoving(conf) {
         const speed = conf.speed;
-        conf.position.x -= Math.sin(conf.theta.cur * (Math.PI / 180)) * speed;
-        conf.position.y += Math.cos(conf.theta.cur * (Math.PI / 180)) * speed;
+        // Movement is based on standard angle (0 = right, PI/2 = up)
+        conf.position.x += Math.cos(conf.theta.cur) * speed;
+        conf.position.y += Math.sin(conf.theta.cur) * speed;
 
+        // World limits (wrapping)
         const floorSize = conf.floor.size;
         if (conf.position.x < -floorSize.x / 2) conf.position.x = floorSize.x / 2;
         if (conf.position.x > floorSize.x / 2) conf.position.x = -floorSize.x / 2;

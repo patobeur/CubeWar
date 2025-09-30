@@ -33,7 +33,10 @@ class Mob {
 			this.conf.position.y,
 			this.conf.position.z
 		);
-		this.mesh.rotation.z = this.conf.theta.cur
+		// The AI calculates theta where 0 is to the right (+X).
+		// The mob's "front" is its +Y axis. To align +Y with the angle,
+		// we subtract 90 degrees (PI/2) from the angle.
+		this.mesh.rotation.z = this.conf.theta.cur - (Math.PI / 2);
 		this.#update_BBox()
 
 
