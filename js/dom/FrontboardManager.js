@@ -13,7 +13,8 @@ class FrontboardManager {
     }
 
     refresh(statname, value) {
-        if (!this.stats[statname]) return;
+        // Only refresh if the stat and its UI element exist
+        if (!this.stats[statname] || !this.stats[statname].divcurrent) return;
 
         this.stats[statname].current = value;
         let percentage = (this.stats[statname].current / this.stats[statname].max) * 100;
