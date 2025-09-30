@@ -260,10 +260,10 @@ class PlayerManager {
 				// console.log(skill.birthDay - new Date())
 				// console.log(new Date())
 				// console.log(skill)
-				if (skill.skillDatas.energyCost < this.stats.energy.current) {
-					this.stats.energy.current -= skill.skillDatas.energyCost;
+				if (skill.skillDatas.energyCost < this.stats.stamina.current) {
+					this.stats.stamina.current -= skill.skillDatas.energyCost;
 					if (this.#FrontM) {
-						this.#FrontM.refresh('energy', this.stats.energy.current)
+						this.#FrontM.refresh('stamina', this.stats.stamina.current)
 					}
 					skill.init();
 				}
