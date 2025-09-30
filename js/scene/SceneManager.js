@@ -11,11 +11,11 @@ class SceneManager {
 	#Init() {
 		if (conslog) console.log('SceneManager Mounted !')
 		this.#init_Scene()// -- SCENE
+		this.#init_add_floor()// -- Floor
 		this.#init_Camera()// -- CAMERA
 		this.#init_Renderer()// -- RENDER
 		this.#init_add_Lights()// -- LIGHTS
-		this.#init_add_floor()
-		this.#init_Clock()
+		this.#init_Clock()// -- Timer
 	}
 	#init_Scene() {
 		this.#Scene = new THREE.Scene()

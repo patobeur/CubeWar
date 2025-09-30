@@ -1,6 +1,6 @@
-class Config {
+class GameConfig {
 	version = 0.000001;
-	sceneName = 'FlatWorld';
+	sceneName = 'EggWar3D';
 	canvasId = 'game';
 	#renderer = false;
 	// config;
@@ -31,11 +31,11 @@ class Config {
 			color: 0xFFFFFF,
 			intensity: .7,
 			castShadow: true,
-			position: new THREE.Vector3(0, 0, 10),
+			position: new THREE.Vector3(0, 0, 100),
 			lookat: new THREE.Vector3(0, 0, 0),
 			penumbra: 1,
 			decay: 1,
-			distance: 5000,
+			distance: 3000,
 			shadow: {
 				mapSize: {
 					width: 2048,
@@ -78,7 +78,7 @@ class Config {
 			far: 5000,
 			zoom: { step: .5, zmin: 10, zmax: 80 },
 			position: new THREE.Vector3(0, 5, 0),
-			decalage: { x: 0, y: 0, z: 40 },
+			decalage: { x: 0, y: 0, z: 60 },
 			lookat: { x: 0, y: 0, z: 0 },
 		}
 	}

@@ -1,6 +1,8 @@
 "use strict";
 class SkillsManager {
-	constructor(skillname, position, rotation, fromfloor = 1) {
+	constructor(skillname, position, rotation, fromfloor = 1, Scene) {
+		this.formula = new Formula()
+		this.scene = Scene
 		this.fromfloor = fromfloor / 2;
 
 		this.skillDatas = this.#getSkill(skillname, position, rotation);
@@ -59,7 +61,7 @@ class SkillsManager {
 		// ????????????????
 		this.#applyDatasOnMesh()
 		this.#applyRotationOnMesh()
-		scene.add(this.mesh)
+		this.scene.add(this.mesh)
 	}
 	#update = () => {
 		if (!this.destinationReached) {
@@ -106,12 +108,11 @@ class SkillsManager {
 		}
 	}
 	#setNextPosition() {
-		let nextPos = FORMULA.get_NextThreePos(this.skillDatas.x, this.skillDatas.y, this.skillDatas.rotation, this.skillDatas.speed)
+		let nextPos = this.formula.get_NextThreePos(this.skillDatas.x, this.skillDatas.y, this.skillDatas.rotation, this.skillDatas.speed)
 		this.skillDatas.x = nextPos.x
 		this.skillDatas.y = nextPos.y
 	}
 	#applyRotationOnMesh() {
-
 		// if (this.skillDatas.rotation) this.mesh.rotation.z = this.skillDatas.rotation;
 		if (this.skillDatas.rotation) this.mesh.rotation.z = this.skillDatas.rotation;
 	}
@@ -120,16 +121,16 @@ class SkillsManager {
 			fireball: {
 				name: 'Fire Ball',
 				meshType: 'cube',
-				w: .3, //radius
-				h: .3,
+				w: .5,
+				h: .5,
 				l: 1,
 				distanceMax: 50,
-				color: 'white',
+				color: 'red',
 				speed: .5,
 				rotation: 0,
 				addTheta: (Math.PI / 4),
 				fromfloor: 0, // (w /2)
-				energyCost: 20,
+				energyCost: 5,
 				recastTimer: 1000,
 			},
 			cube: {
@@ -139,7 +140,7 @@ class SkillsManager {
 				h: 10,
 				l: 10,
 				distanceMax: 15,
-				color: 'white',
+				color: 'red',
 				speed: .6,
 				scale: { start: 0, end: 5, current: 1 },//min zero,
 				rotation: 0,
@@ -157,7 +158,7 @@ class SkillsManager {
 				l: .1,
 				distanceMax: 10,
 				duration: 5000,
-				color: 'white',
+				color: 'red',
 				speed: .5,
 				x: 0,
 				y: 0,
@@ -171,10 +172,10 @@ class SkillsManager {
 		return skill[skillname]
 	}
 	#removeFromSceneAndDispose() {
-		const object = scene.getObjectByProperty('uuid', this.mesh.uuid);
+		const object = this.scene.getObjectByProperty('uuid', this.mesh.uuid);
 		object.geometry.dispose();
 		object.material.dispose();
-		scene.remove(object);
+		this.scene.remove(object);
 	}
 	// getSinValue(val) {
 	// 	let x = 0;//h

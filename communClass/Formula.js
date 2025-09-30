@@ -3,12 +3,12 @@ class Formula {
 	constructor() {
 
 	}
-	get_NextHtmlPos = (x, y, tetha, speed) => {
-		tetha = this.degToRad(tetha)
+	get_NextHtmlPos = (x, y, theta, speed) => {
+		theta = this.degToRad(theta)
 
 		let neo = {
-			x: x - Math.sin(tetha) * speed,
-			y: y + Math.cos(tetha) * speed
+			x: x - Math.sin(theta) * speed,
+			y: y + Math.cos(theta) * speed
 		}
 
 		neo.x = Math.round(neo.x * 10) / 10;
@@ -30,10 +30,11 @@ class Formula {
 		return neo
 	}
 	get_NextThreePos = (x, y, theta, speed) => {
-		return {
-			x: x - Math.sin(theta) * speed,
-			y: y + Math.cos(theta) * speed
-		}
+		// console.log('avant', x, y)
+		x = x - Math.sin(theta) * speed
+		y = y + Math.cos(theta) * speed
+		// console.log('après', x, y)
+		return { x: x, y: y }
 	}
 	getNextOrbit(x, y, theta) {
 		return {
@@ -78,13 +79,13 @@ class Formula {
 		return pos
 	}
 	get_aleaPosOnFloor(floorSize) {
-
 		let pos = {
-			x: this.rand(-(floorSize.x / 2), (floorSize.x / 2)),
-			y: this.rand(-(floorSize.y / 2), (floorSize.y / 2)),
+			x: this.rand(0, floorSize.x) - (floorSize.x / 2),
+			y: this.rand(0, floorSize.y) - (floorSize.y / 2),
 			z: 0//this.rand(-1, 1)
 		}
-		// console.log(size, pos)
+		// console.log(0 - ("x", floorSize.x / 2), 'to', floorSize.x - (floorSize.x / 2), ':', pos.x)
+		// console.log(0 - ("y", floorSize.y / 2), 'to', floorSize.y - (floorSize.y / 2), ':', pos.y)
 		return pos
 	}
 	get_NextOrbitPosXYZ = (obj, centerObj = false) => {

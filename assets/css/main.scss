@@ -1,0 +1,55 @@
+*,
+::before,
+::after {
+	margin: 0;
+	padding: 0;
+	-webkit-user-select: none;
+	/* Safari */
+	-moz-user-select: none;
+	/* Firefox */
+	-ms-user-select: none;
+	/* IE10+/Edge */
+	user-select: none;
+	/* Standard */
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0px;
+	text-align: center;
+	position: relative;
+	width: 100vw;
+	height: 100vh;
+	overflow: hidden;
+	background-color: rgb(42, 38, 58);
+}
+
+#info {
+	position: absolute;
+	display: flex;
+	right: 5px;
+	bottom: 5px;
+	width: max-content;
+	height: max-content;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	padding: 3px;
+	/* border: 1px solid white; */
+	z-index: 5;
+	background: rgba(255, 255, 255, 0.313);
+}
+
+.octicon {
+	display: inline-block;
+	overflow: visible !important;
+	vertical-align: text-bottom;
+	fill: white;
+}
+
+.github,
+.github a:hover,
+.github a:active,
+.github a {
+	color: white;
+}

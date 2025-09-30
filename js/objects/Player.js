@@ -3,18 +3,18 @@ class Player {
 	#dp; // datas for player
 	#currentStarImmat;
 	constructor() {
-		this.#Init()
+		this.#Init();
 	}
 	#Init() {
-		if (conslog) console.log('Player Mounted !')
-		this.#currentStarImmat = 1
-		this.#set_dp()
+		if (conslog) console.log("Player Mounted !");
+		this.#currentStarImmat = 1;
+		this.#set_dp();
 	}
 	getPlayer(name) {
 		let shape = this.#dp[name].shape;
 		let geometry;
 		let material;
-		if (shape == 'cube') {
+		if (shape == "cube") {
 			geometry = new THREE.BoxGeometry(
 				this.#dp[name][shape].width,
 				this.#dp[name][shape].height,
@@ -23,9 +23,9 @@ class Player {
 			material = new THREE.MeshPhongMaterial({
 				color: this.#dp[name].color,
 				flatShading: this.#dp[name].flatShading,
-			})
+			});
 		}
-		if (shape == 'sphere') {
+		if (shape == "sphere") {
 			geometry = new THREE.SphereGeometry(
 				this.#dp[name][shape].radius,
 				this.#dp[name][shape].widthSegments,
@@ -34,7 +34,7 @@ class Player {
 			material = new THREE.MeshPhongMaterial({
 				color: this.#dp[name].color,
 				flatShading: this.#dp[name].flatShading,
-			})
+			});
 		}
 
 		this.#player = new THREE.Mesh(geometry, material);
@@ -48,22 +48,22 @@ class Player {
 		this.#player.receiveShadow = this.#dp[name].receiveShadow;
 		this.#player.matrixAutoUpdate = this.#dp[name].matrixAutoUpdate;
 
-		// this.#player.wireframe = true
-		// this.#player.helpermaison = new THREE.BoxHelper(this.#player, 0xffff00);
+		let distFromCenter = this.#player.position.distanceTo(
+			new THREE.Vector3(0, 0, 0)
+		);
+		this.#player.distFromCenter = distFromCenter;
 
-		let distFromCenter = this.#player.position.distanceTo(new THREE.Vector3(0, 0, 0))
-		this.#player.distFromCenter = distFromCenter
-		// this.#player.bbox = this.#setBoundingBox(this.#player)
-		return this.#player
+		return this.#player;
 	}
 	#setBoundingBox(ele) {
 		return new THREE.Box3().setFromObject(ele);
 	}
 	#set_dp = () => {
 		this.#dp = {
-			'One': {
+			One: {
 				lv: 0,
-				shape: 'sphere',
+				experiencePoints: 0,
+				shape: "sphere",
 				sphere: {
 					radius: 1,
 					widthSegments: 16,
@@ -84,13 +84,13 @@ class Player {
 				},
 				pos: new THREE.Vector3(0, 30, 0),
 				rotation: new THREE.Vector3(0, 0, 0),
-				color: 0xFF00FF,
+				color: 0xff00ff,
 				flatShading: true,
 				wireframe: true,
 				castShadow: true,
 				receiveShadow: true,
-				matrixAutoUpdate: true
-			}
-		}
-	}
+				matrixAutoUpdate: true,
+			},
+		};
+	};
 }

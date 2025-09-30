@@ -27,24 +27,14 @@ class ControlsManager {
 		this.sright = false;
 
 		this.#touchDeviceActive = this.#isTouchDevice(); // TouchDeviceActive
-
-		switch (type) {
-			case "player":
-				if (this.#touchDeviceActive) {
-					if (conslog) console.log('touch device on !')
-					this.#TouchM = new TouchMe(this);
-				}
-				else {
-					if (conslog) console.log('keyboard\'n\'mouse on !')
-					this.#addKeyboardListeners();
-					this.#addMouseListeners();
-				}
-
-				break
-			case "MOB":
-				// this.forward = true;
-				// this.right = true;
-				break
+		if (this.#touchDeviceActive) {
+			console.log('touch device on !')
+			this.#TouchM = new TouchMe(this);
+		}
+		else {
+			console.log('keyboard\'n\'mouse on !')
+			this.#addKeyboardListeners();
+			this.#addMouseListeners();
 		}
 		this.scale = 1
 	}
@@ -62,10 +52,12 @@ class ControlsManager {
 		document.body.appendChild(target)
 
 		document.documentElement.oncontextmenu = (event) => {
+			console.log('right click')
 			event.preventDefault();
 			this.shoot2 = true;
 		}
 		document.documentElement.onclick = (event) => {
+			console.log('left click')
 			this.shoot1 = true;
 		}
 		// document.documentElement.onwheel = (event) => {
@@ -113,7 +105,7 @@ class ControlsManager {
 	#addKeyboardListeners() {
 		if (conslog) console.log('addKeyboardListeners')
 		document.onkeydown = (event) => {
-			console.log(event)
+			if (conslog) console.log(event)
 			switch (event.key) {
 				case "&":
 					this.shoot1 = true;

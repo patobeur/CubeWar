@@ -75,11 +75,11 @@
 ## Jeu
 
 -  c'est un jeu solo ou il faut faire gagner son camp.
--  il doit y avoir 50 cubes max (on verras si c'est trop plus tard) 10 par factions -1 dans une faction car c'est le joueur.
--  5 couleurs de cubes, soit 5 factions (on verras si c'est trop peu plus tard).
+-  il doit y avoir 4 cubes par faction max au début (on verras si c'est trop plus tard) 4 par factions -1 dans une faction car c'est le joueur.
+-  4 couleurs de cubes, soit 4 factions (on verras si c'est trop peu plus tard).
 -  les cubes n'ont pas forcement le meme comportement ni la meme taille.
 -  des ressources pop sur la map.
--  a chaque fois q'un cube meur, un autre apparait d'une des 5 couleurs.
+-  a chaque fois q'un cube meur, un autre apparait d'une des 4 couleurs.
 -  le joueur jou une couleur de son choix (la difference avec les autre c'est qu'il a un cercle autour de lui) et qu'il est toujours au centre de l'ecran d'une certaine maniere.
 
 ## menu de navigation top (fond flouttant le dessous) responsive.

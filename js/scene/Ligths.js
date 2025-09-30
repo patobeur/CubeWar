@@ -53,23 +53,28 @@ class Lights {
 
 	}
 	#testingPointLight() {
-		let size = { x: 90, y: 90 } // map size
+		// console.log('Config.floor:', this.#Config.floor)
+		let size = { // map size
+			x: this.#Config.floor.size.x,
+			y: this.#Config.floor.size.y,
+			z: this.#Config.floor.size.z
+		}
 		let spot = [
 			{ x: -(size.x / 4), y: -(size.y / 4) },
 			{ x: -(size.x / 4), y: (size.y / 4) },
 			{ x: (size.x / 4), y: -(size.y / 4) },
 			{ x: (size.x / 4), y: (size.y / 4) },
 		]
-		for (let i = 0; i < 2; i++) {
+		for (let i = 0; i < 1; i++) {
 			let pointLight = new THREE.PointLight(0xFFFFFF, .1);
 			pointLight.castShadow = true;
 			pointLight.shadow.bias = 0.0001;
-			pointLight.shadow.mapSize.width = 2048;
-			pointLight.shadow.mapSize.height = 2048;
+			pointLight.shadow.mapSize.width = 4096;
+			pointLight.shadow.mapSize.height = 4096;
 			pointLight.position.set(
 				spot[i].x,
 				spot[i].y,
-				30
+				150
 			);
 			pointLight.name = 'pointLight_' + i;
 			this.#Scene.add(pointLight);

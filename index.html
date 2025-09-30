@@ -1,232 +1,82 @@
 <!DOCTYPE html>
 <html lang="en">
-
 	<head>
-		<meta charset="UTF-8">
-		<meta http-equiv="X-UA-Compatible" content="IE=edge">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>Document</title>
-		<script src="./three/main.js"></script>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>CubeWars</title>
+		<link rel="stylesheet" media="all" href="./assets/css/main.css" />
 
-		<script src="./three/vendor/three.min.js"></script>
-		<script src="./three/vendor/OrbitControls.js"></script>
-		<!--<script src="./three/vendor/GLTFLoader.js"></script>
-		<script src="./three/vendor/threex.domevents.js"></script>
-		<script src="./three/vendor/threex.linkify.js"></script> -->
+		<script src="./main.js"></script>
 
-		<script src="./three/js/GameConfig.js"></script>
-		<script src="./three/js/PlayerConfig.js"></script>
-		<script src="./three/js/Game.js"></script>
-		<script src='./three/js/game/ControlsManager.js'></script>
-		<script src="./three/js/scene/SceneManager.js"></script>
-		<script src="./three/js/scene/Ligths.js"></script>
-		<script src="./three/js/scene/Floors.js"></script>
-		<script src="./three/js/dom/DomManager.js"></script>
-		<!-- <script src="./three/js/objects/SpaceShip.js"></script> -->
-		<script src="./three/communClass/Formula.js"></script>
-		<script src='./three/communClass/WindowActive.js'></script>
-		<!-- <script src='./three/communClass/chatbotFactory.js'></script> -->
-		<script src='./three/js/game/PlayerManager.js'></script>
-		<script src='./three/js/game/SkillsManager.js'></script>
+		<script src="./vendor/three.min.js"></script>
+		<script src="./vendor/OrbitControls.js"></script>
+		<!--
+			on garde ces 3 fichiers pour le futur
+			<script src="./vendor/GLTFLoader.js"></script>
+			<script src="./vendor/threex.domevents.js"></script>
+			<script src="./vendor/threex.linkify.js"></script>
+		-->
 
-		<!-- 
-		<script src="./three/js/game/LoadingManager.js"></script>
-		<script src='./three/js/game/ImagesManager.js'></script>
-		<script src="./three/js/dom/FrontboardManager.js"></script>
-		<script src="./three/js/objects/Things.js"></script>
-		<script src="./three/js/objects/Thing.js"></script>
-		<script src="./three/js/objects/Pieces.js"></script>
-		 -->
+		<script src="./communClass/Formula.js"></script>
+		<script src="./js/GameConfig.js"></script>
+		<script src="./js/PlayerConfig.js"></script>
 
+		<script src="./js/Game.js"></script>
+		<script src="./js/game/ControlsManager.js"></script>
+		<script src="./js/scene/SceneManager.js"></script>
+		<script src="./js/scene/Ligths.js"></script>
+		<script src="./js/scene/Floors.js"></script>
+		<script src="./js/dom/DomManager.js"></script>
 
-		<script src='./three/js/Mobs.js'></script>
-		<script src='./three/js/mobs/Mob.js'></script>
-		<script src='./three/js/mobs/MobConfig.js'></script>
-		<script src='./three/js/mobs/MobsIa.js'></script>
+		<script src="./js/game/PlayerManager.js"></script>
+		<script src="./js/game/SkillsManager.js"></script>
 
+		<script src="./js/dom/FrontboardManager.js"></script>
+		<script src="./communClass/TouchMe.js"></script>
+
+		<!-- windows activity manager -->
+		<script src="./communClass/WindowActive.js"></script>
+
+		<!-- mobs -->
+		<script src="./js/mobs/Mobs.js"></script>
+		<script src="./js/mobs/Mob.js"></script>
+		<script src="./js/mobs/MobConfig.js"></script>
+		<script src="./js/mobs/MobsIa.js"></script>
 
 		<style>
-			*,
-			::before,
-			::after {
-				margin: 0;
-				padding: 0;
-				-webkit-user-select: none;
-				/* Safari */
-				-moz-user-select: none;
-				/* Firefox */
-				-ms-user-select: none;
-				/* IE10+/Edge */
-				user-select: none;
-				/* Standard */
-				box-sizing: border-box;
-			}
-
-			body {
-				margin: 0px;
-				text-align: center;
-				position: relative;
-				width: 100vw;
-				height: 100vh;
-				overflow: hidden;
-				background-color: rgb(42, 38, 58);
-			}
-
-			#info {
+			#lesmobs {
 				position: absolute;
-				display: flex;
-				right: 5px;
-				bottom: 5px;
-				width: max-content;
-				height: max-content;
-				margin: 0;
-				padding: 0;
-				overflow: hidden;
-				padding: 3px;
-				/* border: 1px solid white; */
-				z-index: 5;
-				background: rgba(255, 255, 255, 0.313);
+				z-index: 9999999999999;
+				background-color: white;
 			}
-
-			.octicon {
-				display: inline-block;
-				overflow: visible !important;
-				vertical-align: text-bottom;
-				fill: white;
-			}
-
-			.github,
-			.github a:hover,
-			.github a:active,
-			.github a {
-				color: white;
-			}
-
 		</style>
-
 	</head>
 
 	<body>
-		<script>
-			// window.onload = function init() {
-			// 	const scene = new THREE.Scene();
-			// 	const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-			// 	camera.position.x = 0;
-			// 	camera.position.y = 0;
-			// 	camera.position.z = 10;
-
-			// 	const renderer = new THREE.WebGLRenderer({ antialias: true });
-			// 	renderer.setSize(window.innerWidth, window.innerHeight);
-
-			// 	renderer.outputEncoding = THREE.sRGBEncoding;
-			// 	renderer.shadowMap.enabled = true;
-			// 	renderer.setPixelRatio(window.devicePixelRatio);
-
-			// 	document.body.appendChild(renderer.domElement);
-
-			// 	// OrbitControl - need camera and renderer
-			// 	const controls = new THREE.OrbitControls(camera, renderer.domElement);
-
-			// 	// set up ambient light
-			// 	const ambient = new THREE.AmbientLight(0xffffff, 0.1);
-			// 	scene.add(ambient);
-
-			// 	// set up spot light + helper
-			// 	const spotLight = new THREE.SpotLight(0xffffff, 1);
-			// 	spotLight.position.set(0, 0, 20);
-			// 	spotLight.angle = Math.PI / 4;
-			// 	spotLight.penumbra = 0.1;
-			// 	spotLight.decay = 2;
-			// 	spotLight.distance = 200;
-
-			// 	spotLight.castShadow = true;
-			// 	spotLight.shadow.mapSize.width = 512;
-			// 	spotLight.shadow.mapSize.height = 512;
-			// 	spotLight.shadow.camera.near = 1;
-			// 	spotLight.shadow.camera.far = 200;
-			// 	spotLight.shadow.focus = 1;
-			// 	scene.add(spotLight);
-
-			// 	const slHelper = new THREE.SpotLightHelper(spotLight);
-			// 	scene.add(spotLight, slHelper, spotLight.target);
-
-
-
-			// 	// set up red box mesh
-			// 	const bg1 = new THREE.BoxGeometry(1, 1, 1);
-			// 	const bm1 = new THREE.MeshPhongMaterial({ color: 0xff0000 });
-			// 	const boxMesh1 = new THREE.Mesh(bg1, bm1);
-			// 	boxMesh1.castShadow = true;
-			// 	boxMesh1.position.x = -2;
-			// 	boxMesh1.position.y = 0;
-			// 	boxMesh1.position.z = 2;
-			// 	scene.add(boxMesh1);
-
-			// 	// set up green box mesh
-			// 	const bg2 = new THREE.BoxGeometry(1, 1, 1);
-			// 	const bm2 = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
-			// 	const boxMesh2 = new THREE.Mesh(bg2, bm2);
-			// 	boxMesh2.castShadow = true;
-			// 	boxMesh2.position.x = 0;
-			// 	boxMesh2.position.y = 0;
-			// 	boxMesh2.position.z = 2;
-			// 	scene.add(boxMesh2);
-
-			// 	// set up blue box mesh
-			// 	const bg3 = new THREE.BoxGeometry(1, 1, 1);
-			// 	const bm3 = new THREE.MeshPhongMaterial({ color: 0x0000ff });
-			// 	const boxMesh3 = new THREE.Mesh(bg3, bm3);
-			// 	boxMesh3.castShadow = true;
-			// 	boxMesh3.position.x = 2;
-			// 	boxMesh3.position.y = 0;
-			// 	boxMesh3.position.z = 2;
-			// 	scene.add(boxMesh3);
-
-
-
-			// 	// set up ground
-			// 	const groundGeometry = new THREE.BoxGeometry(9, 9, .5);
-			// 	const groundMaterial = new THREE.MeshPhongMaterial({ color: 0xfafafa });
-			// 	const groundMesh = new THREE.Mesh(groundGeometry, groundMaterial);
-			// 	groundMesh.receiveShadow = true;
-			// 	//groundMesh.rotation.x =( Math.PI/2);
-			// 	groundMesh.position.z = -2;
-			// 	scene.add(groundMesh);
-			// 	scene.receiveShadow = true;
-			// 	scene.castShadow = true;
-
-
-			// 	function animate() {
-			// 		requestAnimationFrame(animate);
-
-			// 		camera.updateProjectionMatrix();
-			// 		controls.update();
-			// 		renderer.render(scene, camera);
-			// 	}
-
-			// 	animate();
-
-			// 	window.addEventListener('resize', onWindowResize);
-			// 	function onWindowResize() {
-			// 		camera.aspect = window.innerWidth / window.innerHeight;
-			// 		camera.updateProjectionMatrix();
-			// 		renderer.setSize(window.innerWidth, window.innerHeight);
-			// 	}
-			// }
-		</script>
 		<div id="info">
-			<div class="github">
-				<a target="Version3D" href="index3D.html" title="Version 3D">Version 3D</a>,
-				<a target="githubDemo" href="index.html" title="Version 2D">2D</a> and <a target="githubSource"
-					href="https://github.com/patobeur/EggWar" title="Source Code on Github">Source</a> on Github !
-				<svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16"
-					data-view-component="true" class="octicon">
-					<path fill-rule="evenodd"
-						d="M14.064 0a8.75 8.75 0 00-6.187 2.563l-.459.458c-.314.314-.616.641-.904.979H3.31a1.75 1.75 0 00-1.49.833L.11 7.607a.75.75 0 00.418 1.11l3.102.954c.037.051.079.1.124.145l2.429 2.428c.046.046.094.088.145.125l.954 3.102a.75.75 0 001.11.418l2.774-1.707a1.75 1.75 0 00.833-1.49V9.485c.338-.288.665-.59.979-.904l.458-.459A8.75 8.75 0 0016 1.936V1.75A1.75 1.75 0 0014.25 0h-.186zM10.5 10.625c-.088.06-.177.118-.266.175l-2.35 1.521.548 1.783 1.949-1.2a.25.25 0 00.119-.213v-2.066zM3.678 8.116L5.2 5.766c.058-.09.117-.178.176-.266H3.309a.25.25 0 00-.213.119l-1.2 1.95 1.782.547zm5.26-4.493A7.25 7.25 0 0114.063 1.5h.186a.25.25 0 01.25.25v.186a7.25 7.25 0 01-2.123 5.127l-.459.458a15.21 15.21 0 01-2.499 2.02l-2.317 1.5-2.143-2.143 1.5-2.317a15.25 15.25 0 012.02-2.5l.458-.458h.002zM12 5a1 1 0 11-2 0 1 1 0 012 0zm-8.44 9.56a1.5 1.5 0 10-2.12-2.12c-.734.73-1.047 2.332-1.15 3.003a.23.23 0 00.265.265c.671-.103 2.273-.416 3.005-1.148z">
-					</path>
+			<div class="github"
+				><a
+					target="githubSource"
+					href="https://github.com/patobeur/CubeWar"
+					title="Source Code on Github"
+					>Source</a
+				>
+				on Github !
+				<svg
+					aria-hidden="true"
+					height="16"
+					viewBox="0 0 16 16"
+					version="1.1"
+					width="16"
+					data-view-component="true"
+					class="octicon">
+					<path
+						fill-rule="evenodd"
+						d="M14.064 0a8.75 8.75 0 00-6.187 2.563l-.459.458c-.314.314-.616.641-.904.979H3.31a1.75 1.75 0 00-1.49.833L.11 7.607a.75.75 0 00.418 1.11l3.102.954c.037.051.079.1.124.145l2.429 2.428c.046.046.094.088.145.125l.954 3.102a.75.75 0 001.11.418l2.774-1.707a1.75 1.75 0 00.833-1.49V9.485c.338-.288.665-.59.979-.904l.458-.459A8.75 8.75 0 0016 1.936V1.75A1.75 1.75 0 0014.25 0h-.186zM10.5 10.625c-.088.06-.177.118-.266.175l-2.35 1.521.548 1.783 1.949-1.2a.25.25 0 00.119-.213v-2.066zM3.678 8.116L5.2 5.766c.058-.09.117-.178.176-.266H3.309a.25.25 0 00-.213.119l-1.2 1.95 1.782.547zm5.26-4.493A7.25 7.25 0 0114.063 1.5h.186a.25.25 0 01.25.25v.186a7.25 7.25 0 01-2.123 5.127l-.459.458a15.21 15.21 0 01-2.499 2.02l-2.317 1.5-2.143-2.143 1.5-2.317a15.25 15.25 0 012.02-2.5l.458-.458h.002zM12 5a1 1 0 11-2 0 1 1 0 012 0zm-8.44 9.56a1.5 1.5 0 10-2.12-2.12c-.734.73-1.047 2.332-1.15 3.003a.23.23 0 00.265.265c.671-.103 2.273-.416 3.005-1.148z"></path>
 				</svg>
 			</div>
 		</div>
+		<div id="lesmobs"></div>
 	</body>
-
 </html>
