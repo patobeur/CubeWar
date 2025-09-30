@@ -9,19 +9,24 @@ class PlayerManager {
 
 		this.type = 'player';
 		this.#GConfig = GConfig;
-		this.#PConfig = new PlayerConfig(role);
+
+		this.role = role;
+		this.#PConfig = new PlayerConfig(this.role);
 		this.stats = this.#PConfig.get_stats();
+
+		// Get mesh configuration from MobConfig
+		const mobConfig = new MobConfig(this.role);
+		this.meshConfig = mobConfig.get_().mesh;
+
 		this.id = 'Player_1'; // Unique ID for the player
 		this.faction = faction; // Default faction
 		this.lastAttack = 0; // Timestamp of the last attack
-
-
 
 		this.ControlsM = new ControlsManager(this.type, this.#GConfig);
 
 		this.#StatManager = StatManager;
 		this.Formula = new Formula();
-		this.#Camera = Camera
+		this.#Camera = Camera;
 
 		this.playerGroupe = new THREE.Group();
 
@@ -29,33 +34,18 @@ class PlayerManager {
 			x: x,
 			y: y,
 			z: z,
-			thetaDeg: 0
+			thetaDeg: 0,
 		};
 
-		// this.playerOpacity = .8
-		// this.canonPosition.set(0, .5, 0);
-		this.playerMeshName = "Noob";
+		this.playerMeshName = 'Noob';
 
 		this.regenTimer = { current: 0, max: 10 };
 
 		this.damaged = false;
 
-		this.largeur = 1;
-		this.longueur = 1;
-		this.hauteur = 1;
-
-		// this.rotatioYAngle = THREE.Math.degToRad(1); // 1deg
-
-		// this.rotation = {
-		// 	_x: 0,
-		// 	_y: 0,
-		// 	_z: 0,
-		// };
 		this.receiveShadow = true;
 		this.castShadow = true;
 		this.rotatioYAngle = 0;
-
-		this.playerColor = this.#PConfig.get_value('playerColor');
 
 		this.torche = this.getTorchlight();
 		this.#addPlayerOrbiter({ x: -.5, y: 0, z: .5 }, { x: .25, y: .25, z: .25 });
@@ -170,39 +160,46 @@ class PlayerManager {
 	}
 	#addMeshToModel() {
 		// cube player object
-		let playerMesh = new THREE.Mesh(
-			new THREE.BoxGeometry(this.largeur, this.longueur, this.hauteur),
-			new THREE.MeshPhongMaterial({ color: this.playerColor, wireframe: false })
+		this.PlayerMesh = new THREE.Mesh(
+			new THREE.BoxGeometry(
+				this.meshConfig.size.x,
+				this.meshConfig.size.y,
+				this.meshConfig.size.z
+			),
+			new THREE.MeshPhongMaterial({ color: this.meshConfig.color, wireframe: this.meshConfig.wireframe || false })
 		);
-		// playerMesh.position.set(this.position.x, this.position.y, this.position.z);
-		playerMesh.receiveShadow = this.receiveShadow;
-		playerMesh.castShadow = this.castShadow;
-		playerMesh.material.transparent = true
-		playerMesh.material.opacity = .8
-		playerMesh.name = this.playerMeshName;
-		// playerMesh.traverse(n => {
-		// 	if (n.isMesh) {
-		// 		n.castShadow = true;
-		// 		n.receiveShadow = true;
-		// 		if (n.material.map) n.material.map.anisotropy = 16;
-		// 	}
-		// });
-		this.PlayerMesh = playerMesh
+
+		this.PlayerMesh.receiveShadow = this.receiveShadow;
+		this.PlayerMesh.castShadow = this.castShadow;
+		this.PlayerMesh.name = this.playerMeshName;
+
+		if (this.meshConfig.opacity) {
+			this.PlayerMesh.material.transparent = true;
+			this.PlayerMesh.material.opacity = this.meshConfig.opacity;
+		}
 	}
 	#addModelToGroupe() {
-		// if (this.torche) this.playerGroupe.add(this.torche);
-		this.playerGroupe.add(this.PlayerMesh)
-		let canonPart = new THREE.Mesh(
-			new THREE.BoxGeometry(.5, .8, .5),
-			new THREE.MeshPhongMaterial({ color: this.playerColor, wireframe: false })
-		);
-		canonPart.name = "Cannon";
-		canonPart.material.transparent = true
-		canonPart.material.opacity = .8
-		canonPart.position.set(0, .5, 0);
-		canonPart.receiveShadow = this.receiveShadow;
-		canonPart.castShadow = this.castShadow;
-		this.playerGroupe.add(canonPart);
+		this.playerGroupe.add(this.PlayerMesh);
+
+		// Add a front piece based on the mesh config, similar to Mob.js
+		if (this.meshConfig.childs && this.meshConfig.childs.front && this.meshConfig.childs.front.size) {
+			const frontConf = this.meshConfig.childs.front;
+			const frontMesh = new THREE.Mesh(
+				new THREE.BoxGeometry(frontConf.size.x, frontConf.size.y, frontConf.size.z),
+				new THREE.MeshPhongMaterial({
+					color: frontConf.color || this.meshConfig.color,
+					wireframe: frontConf.wireframe || false
+				})
+			);
+			frontMesh.position.set(
+				this.PlayerMesh.position.x + frontConf.position.x,
+				this.PlayerMesh.position.y + frontConf.position.y,
+				this.PlayerMesh.position.z + frontConf.position.z
+			);
+			frontMesh.name = 'Player_Front';
+			this.playerGroupe.add(frontMesh);
+		}
+
 		this.playerGroupe.position.set(this.position.x, this.position.y, this.position.z);
 	}
 	#playerMoveActions() {
