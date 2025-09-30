@@ -22,7 +22,7 @@ class Game {
 	#Formula;
 	#CHATFACTORY;
 	constructor() {
-		this.HowManyMobs = 25;
+		this.HowManyMobs = 24; // 5 de chaque faction ( -1 dans la faction que le joueur aura choisi)
 		this.#WindowActive = new WindowActive("Flat2");
 		this.#Init();
 	}
