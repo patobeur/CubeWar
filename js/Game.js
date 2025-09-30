@@ -29,11 +29,15 @@ class Game {
 	#attackerName;
 	#attackerRole;
 	#attackerHp;
-	#uiInitialized = false;
 
-	constructor(selectedFaction, selectedRole) {
+	constructor(selectedFaction, selectedRole, uiElements) {
 		this.playerFaction = selectedFaction;
 		this.playerRole = selectedRole;
+		this.#targetNotification = uiElements.targetNotification;
+		this.#attackerCard = uiElements.attackerCard;
+		this.#attackerName = uiElements.attackerName;
+		this.#attackerRole = uiElements.attackerRole;
+		this.#attackerHp = uiElements.attackerHp;
 		this.#WindowActive = new WindowActive("Flat2");
 		this.#Init();
 	}
@@ -131,15 +135,6 @@ class Game {
 
 	#Animate = () => {
 		if (!this.#pause && this.#WindowActive.get_isWindowActive()) {
-			if (!this.#uiInitialized) {
-				this.#targetNotification = document.getElementById('target-notification');
-				this.#attackerCard = document.getElementById('attacker-card');
-				this.#attackerName = document.getElementById('attacker-name');
-				this.#attackerRole = document.getElementById('attacker-role');
-				this.#attackerHp = document.getElementById('attacker-hp');
-				this.#uiInitialized = true;
-			}
-
 			var delta = this.#clock.getDelta();
 			var elapsed = this.#clock.elapsedTime;
 			this.#PlayerManager.update();
