@@ -3,8 +3,8 @@ class PlayerManager {
 	#GConfig;
 	#PConfig
 	#Camera
-	#FrontM
-	constructor(x = 0, y = 0, z = 0, GConfig, FrontM, Camera, Scene) {
+	#StatManager
+	constructor(x = 0, y = 0, z = 0, GConfig, StatManager, Camera, Scene) {
 		this.scene = Scene
 
 		this.type = 'player';
@@ -19,7 +19,7 @@ class PlayerManager {
 
 		this.ControlsM = new ControlsManager(this.type, this.#GConfig);
 
-		this.#FrontM = FrontM;
+		this.#StatManager = StatManager;
 		this.Formula = new Formula();
 		this.#Camera = Camera
 
@@ -69,7 +69,7 @@ class PlayerManager {
 		if (this.stats.hp.current <= 0) return;
 
 		this.stats.hp.current -= amount;
-		this.#FrontM.refresh('hp', this.stats.hp.current);
+		this.#StatManager.refresh('hp', this.stats.hp.current);
 
 		if (this.stats.hp.current <= 0) {
 			console.log("Player has been defeated.");
@@ -149,10 +149,10 @@ class PlayerManager {
 						this.stats[key].current += this.stats[key].regen
 						// if (this.type === "PLAYER") {
 						//console.log("PLAYER PLAYERPLAYER PLAYERPLAYER PLAYERPLAYER PLAYERPLAYER PLAYERPLAYER PLAYERPLAYER PLAYERPLAYER PLAYERPLAYER PLAYERPLAYER PLAYERPLAYER PLAYERPLAYER PLAYERPLAYER PLAYERPLAYER PLAYER")
-						if (this.#FrontM) {
-							this.#FrontM.refresh(key, this.stats[key].current)
+						if (this.#StatManager) {
+							this.#StatManager.refresh(key, this.stats[key].current)
 						}
-						else { console.log('no this.#FrontM') }
+						else { console.log('no this.#StatManager') }
 						// }
 					}
 				}
@@ -262,8 +262,8 @@ class PlayerManager {
 				// console.log(skill)
 				if (skill.skillDatas.energyCost < this.stats.stamina.current) {
 					this.stats.stamina.current -= skill.skillDatas.energyCost;
-					if (this.#FrontM) {
-						this.#FrontM.refresh('stamina', this.stats.stamina.current)
+					if (this.#StatManager) {
+						this.#StatManager.refresh('stamina', this.stats.stamina.current)
 					}
 					skill.init();
 				}
