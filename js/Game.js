@@ -23,9 +23,21 @@ class Game {
 	#Formula;
 	#CHATFACTORY;
 	#FactionManager;
-	constructor(selectedFaction, selectedRole) {
+
+	#targetNotification;
+	#attackerCard;
+	#attackerName;
+	#attackerRole;
+	#attackerHp;
+
+	constructor(selectedFaction, selectedRole, uiElements) {
 		this.playerFaction = selectedFaction;
 		this.playerRole = selectedRole;
+		this.#targetNotification = uiElements.targetNotification;
+		this.#attackerCard = uiElements.attackerCard;
+		this.#attackerName = uiElements.attackerName;
+		this.#attackerRole = uiElements.attackerRole;
+		this.#attackerHp = uiElements.attackerHp;
 		this.#WindowActive = new WindowActive("Flat2");
 		this.#Init();
 	}
@@ -89,7 +101,7 @@ class Game {
 
 		// this.#CHATFACTORY = new ChatBotFactory();
 
-		this.MobsManager = new Mobs(this.#GConfig, this.#FactionManager);
+		this.MobsManager = new Mobs(this.#GConfig, this.#FactionManager, this.playerFaction);
 
 		this.MobsManager.addMobs(this.playerFaction);
 		this.MobsManager.addClouds(5); // Add 5 clouds
@@ -181,6 +193,19 @@ class Game {
 				});
 
 				this.allMobs = this.allMobs.filter(mob => !mob.conf.states.dead);
+
+				// --- UI Update Phase ---
+				const attacker = this.allMobs.find(mob => mob.conf.isTargetingPlayer);
+				if (attacker) {
+					this.#targetNotification.classList.remove('hidden');
+					this.#attackerCard.classList.remove('hidden');
+					this.#attackerName.textContent = attacker.conf.nickname;
+					this.#attackerRole.textContent = attacker.conf.role;
+					this.#attackerHp.textContent = attacker.conf.hp;
+				} else {
+					this.#targetNotification.classList.add('hidden');
+					this.#attackerCard.classList.add('hidden');
+				}
 			}
 		}
 		// this.#things.update(this.#pause, this.#WindowActive.get_isWindowActive())

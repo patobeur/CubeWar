@@ -92,7 +92,6 @@ class PlayerManager {
 
 	}
 	update() {
-		console.log('player update -->')
 		this.#playerMoveActions();
 		this.#updateShoots();
 		if (this.playerOrbiter) {
@@ -214,6 +213,8 @@ class PlayerManager {
 				if (this.ControlsM.reverse) { this.playerGroupe.position.y -= speed }//; direction.angle = 180 }
 				if (this.ControlsM.left) { this.playerGroupe.position.x -= speed }//; direction.angle = 90 }
 				if (this.ControlsM.right) { this.playerGroupe.position.x += speed }//; direction.angle = 270 }
+				this.#applyBoundary(); // Apply boundary checks after movement
+
 				this.#Camera.position.set(
 					this.#GConfig.get_camera('decalage').x + this.playerGroupe.position.x,
 					this.#GConfig.get_camera('decalage').y + this.playerGroupe.position.y,
@@ -229,6 +230,24 @@ class PlayerManager {
 		}
 		else {
 			// this is a mOB
+		}
+	}
+
+	#applyBoundary() {
+		const floorSize = this.#GConfig.floor.size;
+		const halfX = floorSize.x / 2;
+		const halfY = floorSize.y / 2;
+
+		if (this.playerGroupe.position.x < -halfX) {
+			this.playerGroupe.position.x = -halfX;
+		} else if (this.playerGroupe.position.x > halfX) {
+			this.playerGroupe.position.x = halfX;
+		}
+
+		if (this.playerGroupe.position.y < -halfY) {
+			this.playerGroupe.position.y = -halfY;
+		} else if (this.playerGroupe.position.y > halfY) {
+			this.playerGroupe.position.y = halfY;
 		}
 	}
 	// addPlayers() {

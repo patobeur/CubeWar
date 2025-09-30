@@ -55,6 +55,31 @@
 				z-index: 9999999999999;
 				background-color: white;
 			}
+			.hidden {
+				display: none;
+			}
+			#attacker-card {
+				position: absolute;
+				top: 10px;
+				right: 10px;
+				background-color: rgba(0, 0, 0, 0.5);
+				backdrop-filter: blur(10px);
+				color: white;
+				padding: 10px;
+				border-radius: 5px;
+				z-index: 100;
+			}
+			#target-notification {
+				position: fixed;
+				bottom: 10px;
+				left: 50%;
+				transform: translateX(-50%);
+				background-color: rgba(255, 0, 0, 0.7);
+				color: white;
+				padding: 10px;
+				border-radius: 5px;
+				z-index: 100;
+			}
 		</style>
 	</head>
 
@@ -110,6 +135,16 @@
 			</div>
 		</div>
 		<div id="lesmobs"></div>
-		<footer id="footer"></footer>
+		<div id="attacker-card" class="hidden">
+			<h3>Attacker Info</h3>
+			<p>Name: <span id="attacker-name"></span></p>
+			<p>Role: <span id="attacker-role"></span></p>
+			<p>HP: <span id="attacker-hp"></span></p>
+		</div>
+		<footer id="footer">
+			<div id="target-notification" class="hidden">
+				You are being targeted!
+			</div>
+		</footer>
 	</body>
 </html>
