@@ -13,15 +13,18 @@ class Mobs {
         this.#Formula = new Formula();
     }
 
-    addMobs(howmanyMobs) {
+    addMobs(playerFaction) {
         const roles = ['soigneur', 'tireur', 'protecteur'];
         const factionNames = Object.keys(this.#FactionManager.getFactions()).filter(name => name !== 'neutral');
 
-        for (let i = 0; i < howmanyMobs; i++) {
-            const randomRole = roles[this.#Formula.rand(0, roles.length - 1)];
-            const randomFaction = factionNames[this.#Formula.rand(0, factionNames.length - 1)];
-            this.addOne(randomRole, randomFaction);
-        }
+        factionNames.forEach(factionName => {
+            const mobCount = factionName === playerFaction ? 4 : 5;
+            for (let i = 0; i < mobCount; i++) {
+                const randomRole = roles[this.#Formula.rand(0, roles.length - 1)];
+                this.addOne(randomRole, factionName);
+            }
+        });
+
         return this.get_allMobs();
     }
 
@@ -35,6 +38,7 @@ class Mobs {
     addOne(role, factionName) {
         const mobConfig = new MobConfig(role);
         let conf = mobConfig.get_(role);
+        conf.role = role;
 
         // Assign faction and get faction-specific color
         conf.faction = factionName;

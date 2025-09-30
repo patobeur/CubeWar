@@ -23,8 +23,9 @@ class Game {
 	#Formula;
 	#CHATFACTORY;
 	#FactionManager;
-	constructor() {
-		this.HowManyMobs = 24; // 5 de chaque faction ( -1 dans la faction que le joueur aura choisi)
+	constructor(selectedFaction, selectedRole) {
+		this.playerFaction = selectedFaction;
+		this.playerRole = selectedRole;
 		this.#WindowActive = new WindowActive("Flat2");
 		this.#Init();
 	}
@@ -72,7 +73,9 @@ class Game {
 			this.#GConfig,
 			this.#StatManager,
 			this.#Camera,
-			this.#Scene
+			this.#Scene,
+			this.playerFaction,
+			this.playerRole
 		);
 
 		this.#StatManager.initStats(this.#PlayerManager.stats);
@@ -88,7 +91,7 @@ class Game {
 
 		this.MobsManager = new Mobs(this.#GConfig, this.#FactionManager);
 
-		this.MobsManager.addMobs(this.HowManyMobs);
+		this.MobsManager.addMobs(this.playerFaction);
 		this.MobsManager.addClouds(5); // Add 5 clouds
 		this.allMobs = this.MobsManager.get_allMobs();
 

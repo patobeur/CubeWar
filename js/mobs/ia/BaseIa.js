@@ -1,4 +1,4 @@
-class MobsIa {
+class BaseIa {
     constructor() {
         this.Formula = new Formula();
     }

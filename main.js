@@ -1,3 +1,18 @@
 window.onload = function init() {
-	let game = new Game();
-}
+	const selectionModal = document.getElementById('selection-modal');
+	const selectionForm = document.getElementById('player-selection-form');
+	const factionSelect = document.getElementById('faction-select');
+	const roleSelect = document.getElementById('role-select');
+
+	selectionForm.addEventListener('submit', (event) => {
+		event.preventDefault();
+
+		const selectedFaction = factionSelect.value;
+		const selectedRole = roleSelect.value;
+
+		selectionModal.style.display = 'none';
+
+		// Pass the selected options to the Game constructor
+		let game = new Game(selectedFaction, selectedRole);
+	});
+};
