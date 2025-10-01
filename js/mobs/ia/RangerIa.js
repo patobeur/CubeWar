@@ -6,32 +6,71 @@ class RangerIa extends BaseIa {
     iaAction(conf, player, allMobs) {
         const optimalRange = { min: 4.0, max: 8.0 };
 
-        // If the ranger doesn't have a target, find one.
+        // --- Target Management ---
         if (!conf.ia.target || conf.ia.target.conf?.states.dead || conf.ia.target.stats?.hp.current <= 0) {
-            conf.ia.state = 'exploring';
             conf.ia.target = null;
-            super._findTarget(conf, player, allMobs); // Use base method to find a target
+            this._findTarget(conf, player, allMobs);
         }
 
-        // If a target is found, transition to attacking state
+        // --- Buddy Management ---
+        if (!conf.ia.buddy || conf.ia.buddy.conf.states.dead) {
+            conf.ia.buddy = this._findBuddy(conf, allMobs);
+        }
+
+        // --- State Transitions ---
         if (conf.ia.target) {
             conf.ia.state = 'attacking';
+        } else if (conf.ia.buddy) {
+            conf.ia.state = 'following_buddy';
+        } else {
+            conf.ia.state = 'exploring';
         }
 
 
         // --- State Actions ---
-        if (conf.ia.state === 'attacking') {
-            this._kite(conf, optimalRange);
-        } else {
-            // If not attacking, explore
-            super._explore(conf);
+        switch (conf.ia.state) {
+            case 'attacking':
+                this._kite(conf, optimalRange, allMobs);
+                break;
+            case 'following_buddy':
+                this._followBuddy(conf, allMobs);
+                break;
+            case 'exploring':
+                super._explore(conf, allMobs);
+                break;
         }
     }
 
-    _kite(conf, optimalRange) {
+    _findBuddy(conf, allMobs) {
+        let bestBuddy = null;
+        let minDistance = Infinity;
+        const perceptionRadius = conf.perception * 1.5; // Can see protectors a bit further away
+
+        allMobs.forEach(ally => {
+            // Find a living protector of the same faction
+            if (ally.conf.id !== conf.id &&
+                !ally.conf.states.dead &&
+                ally.conf.faction === conf.faction &&
+                ally.conf.role === 'protecteur') {
+
+                const distance = new THREE.Vector2(conf.position.x, conf.position.y).distanceTo(
+                    new THREE.Vector2(ally.conf.position.x, ally.conf.position.y)
+                );
+
+                if (distance < perceptionRadius && distance < minDistance) {
+                    minDistance = distance;
+                    bestBuddy = ally;
+                }
+            }
+        });
+        return bestBuddy;
+    }
+
+
+    _kite(conf, optimalRange, allMobs) {
         const target = conf.ia.target;
         if (!target) {
-            conf.ia.state = 'exploring';
+            conf.ia.state = 'exploring'; // Revert state if target is lost
             return;
         }
 
@@ -41,25 +80,77 @@ class RangerIa extends BaseIa {
             return;
         }
 
-        const mobPositionVec = new THREE.Vector3(conf.position.x, conf.position.y, conf.position.z);
-        const distance = mobPositionVec.distanceTo(targetPosition);
-        const speed = conf.speed;
+        const mobPosition = new THREE.Vector2(conf.position.x, conf.position.y);
+        const targetPos = new THREE.Vector2(targetPosition.x, targetPosition.y);
+        const distance = mobPosition.distanceTo(targetPos);
 
-        // Calculate angle to/from target
+        // --- Vector-based Movement ---
+        let finalMove = new THREE.Vector2(0, 0);
+
+        // 1. Kiting Vector (move to optimal range)
+        let kiteVector = new THREE.Vector2().subVectors(mobPosition, targetPos);
+        if (distance < optimalRange.min) {
+            // Too close, move away
+            finalMove.add(kiteVector.normalize());
+        } else if (distance > optimalRange.max) {
+            // Too far, move closer
+            finalMove.sub(kiteVector.normalize());
+        }
+
+        // 2. Buddy Vector (stay near protector)
+        if (conf.ia.buddy) {
+            const buddyPos = new THREE.Vector2(conf.ia.buddy.conf.position.x, conf.ia.buddy.conf.position.y);
+            const buddyDistance = mobPosition.distanceTo(buddyPos);
+            if (buddyDistance > 3.0) { // Stay within 3 units of buddy
+                let buddyVector = new THREE.Vector2().subVectors(buddyPos, mobPosition).normalize();
+                finalMove.add(buddyVector.multiplyScalar(0.5)); // Buddy influence is weighted
+            }
+        }
+
+        // 3. Cohesion Vector (stick with the group)
+        const cohesionVector = this._getCohesionVector(conf, allMobs).multiplyScalar(0.4);
+        finalMove.add(cohesionVector);
+
+
+        // --- Update Position and Rotation ---
+        if (finalMove.lengthSq() > 0.01) {
+            finalMove.normalize();
+            conf.position.x += finalMove.x * conf.speed;
+            conf.position.y += finalMove.y * conf.speed;
+        }
+
+        // Always face the target when attacking
         const dy = targetPosition.y - conf.position.y;
         const dx = targetPosition.x - conf.position.x;
-        const angle = Math.atan2(dy, dx);
-        conf.theta.cur = angle; // Always face the target
+        conf.theta.cur = Math.atan2(dy, dx);
+    }
 
-        if (distance < optimalRange.min) {
-            // Target is too close, move away
-            conf.position.x -= Math.cos(angle) * speed;
-            conf.position.y -= Math.sin(angle) * speed;
-        } else if (distance > optimalRange.max) {
-            // Target is too far, move closer
-            conf.position.x += Math.cos(angle) * speed;
-            conf.position.y += Math.sin(angle) * speed;
+    _followBuddy(conf, allMobs) {
+        const buddy = conf.ia.buddy;
+        if (!buddy || buddy.conf.states.dead) {
+            conf.ia.state = 'exploring';
+            conf.ia.buddy = null;
+            return;
         }
-        // If within optimal range, the ranger will stop moving and the main combat logic will handle the attacks.
+
+        const buddyPos = new THREE.Vector2(buddy.conf.position.x, buddy.conf.position.y);
+        const mobPos = new THREE.Vector2(conf.position.x, conf.position.y);
+        const distance = mobPos.distanceTo(buddyPos);
+
+        if (distance > 2.5) { // If too far, move towards buddy
+            const moveVector = new THREE.Vector2().subVectors(buddyPos, mobPos).normalize();
+
+            // Also consider cohesion
+            const cohesionVector = this._getCohesionVector(conf, allMobs).multiplyScalar(0.5);
+            moveVector.add(cohesionVector).normalize();
+
+            conf.position.x += moveVector.x * conf.speed;
+            conf.position.y += moveVector.y * conf.speed;
+
+            if (moveVector.lengthSq() > 0.01) {
+                conf.theta.cur = Math.atan2(moveVector.y, moveVector.x);
+            }
+        }
+        // If close enough, just stand still (or wander slightly via cohesion)
     }
 }
