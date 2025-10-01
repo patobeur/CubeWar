@@ -44,7 +44,7 @@ class MobConfig {
                 //-- Statistiques secondaires
                 force: 10,
                 speed: 1.0, // (case/sec)
-                perception: 5, // (cases)
+                perception: 100, // (cases)
                 aggressivity: 0.5, // 50%
                 intelligence: 'medium',
                 resistance: 0.1, // 10%
