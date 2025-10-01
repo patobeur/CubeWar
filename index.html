@@ -1,151 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>CubeWars</title>
-		<link rel="stylesheet" media="all" href="./assets/css/main.css" />
-
-		<script src="./main.js"></script>
-
-		<script src="./vendor/three.min.js"></script>
-		<script src="./vendor/OrbitControls.js"></script>
-		<!--
-			on garde ces 3 fichiers pour le futur
-			<script src="./vendor/GLTFLoader.js"></script>
-			<script src="./vendor/threex.domevents.js"></script>
-			<script src="./vendor/threex.linkify.js"></script>
-		-->
-
-		<script src="./communClass/Formula.js"></script>
-		<script src="./js/GameConfig.js"></script>
-		<script src="./js/PlayerConfig.js"></script>
-
-		<script src="./js/Game.js"></script>
-		<script src="./js/game/ControlsManager.js"></script>
-		<script src="./js/scene/SceneManager.js"></script>
-		<script src="./js/scene/Ligths.js"></script>
-		<script src="./js/scene/Floors.js"></script>
-		<script src="./js/dom/DomManager.js"></script>
-		<script src="./js/dom/StatManager.js"></script>
-
-		<script src="./js/objects/StatusBar.js"></script>
-		<script src="./js/game/PlayerManager.js"></script>
-		<script src="./js/game/SkillsManager.js"></script>
-		<script src="./js/game/FactionManager.js"></script>
-
-		<script src="./js/dom/FrontboardManager.js"></script>
-		<script src="./communClass/TouchMe.js"></script>
-
-		<!-- windows activity manager -->
-		<script src="./communClass/WindowActive.js"></script>
-
-		<!-- mobs -->
-		<script src="./js/mobs/Mobs.js"></script>
-		<script src="./js/mobs/Mob.js"></script>
-		<script src="./js/mobs/MobConfig.js"></script>
-		<script src="./js/mobs/ia/BaseIa.js"></script>
-		<script src="./js/mobs/ia/HealerIa.js"></script>
-		<script src="./js/mobs/ia/RangerIa.js"></script>
-		<script src="./js/mobs/ia/ProtectorIa.js"></script>
-
-		<style>
-			#lesmobs {
-				position: absolute;
-				z-index: 9999999999999;
-				background-color: white;
-			}
-			.hidden {
-				display: none;
-			}
-			#attacker-card {
-				position: absolute;
-				top: 10px;
-				right: 10px;
-				background-color: rgba(0, 0, 0, 0.5);
-				backdrop-filter: blur(10px);
-				color: white;
-				padding: 10px;
-				border-radius: 5px;
-				z-index: 100;
-			}
-			#target-notification {
-				position: fixed;
-				bottom: 10px;
-				left: 50%;
-				transform: translateX(-50%);
-				background-color: rgba(255, 0, 0, 0.7);
-				color: white;
-				padding: 10px;
-				border-radius: 5px;
-				z-index: 100;
-			}
-		</style>
-	</head>
-
-	<body>
-		<div id="selection-modal" class="modal">
-			<div class="modal-content">
-				<h2>Choose your Cube</h2>
-				<form id="player-selection-form">
-					<div class="form-group">
-						<label for="faction-select">Faction:</label>
-						<select id="faction-select">
-							<option value="blue">Blue</option>
-							<option value="red">Red</option>
-							<option value="green">Green</option>
-							<option value="yellow">Yellow</option>
-							<option value="purple">Purple</option>
-						</select>
-					</div>
-					<div class="form-group">
-						<label for="role-select">Role:</label>
-						<select id="role-select">
-							<option value="soigneur">Healer</option>
-							<option value="tireur">Ranger</option>
-							<option value="protecteur">Protector</option>
-						</select>
-					</div>
-					<button type="submit">Start Game</button>
-				</form>
-			</div>
-		</div>
-		<nav id="top-nav"></nav>
-		<div id="info">
-			<div class="github"
-				><a
-					target="githubSource"
-					href="https://github.com/patobeur/CubeWar"
-					title="Source Code on Github"
-					>Source</a
-				>
-				on Github !
-				<svg
-					aria-hidden="true"
-					height="16"
-					viewBox="0 0 16 16"
-					version="1.1"
-					width="16"
-					data-view-component="true"
-					class="octicon">
-					<path
-						fill-rule="evenodd"
-						d="M14.064 0a8.75 8.75 0 00-6.187 2.563l-.459.458c-.314.314-.616.641-.904.979H3.31a1.75 1.75 0 00-1.49.833L.11 7.607a.75.75 0 00.418 1.11l3.102.954c.037.051.079.1.124.145l2.429 2.428c.046.046.094.088.145.125l.954 3.102a.75.75 0 001.11.418l2.774-1.707a1.75 1.75 0 00.833-1.49V9.485c.338-.288.665-.59.979-.904l.458-.459A8.75 8.75 0 0016 1.936V1.75A1.75 1.75 0 0014.25 0h-.186zM10.5 10.625c-.088.06-.177.118-.266.175l-2.35 1.521.548 1.783 1.949-1.2a.25.25 0 00.119-.213v-2.066zM3.678 8.116L5.2 5.766c.058-.09.117-.178.176-.266H3.309a.25.25 0 00-.213.119l-1.2 1.95 1.782.547zm5.26-4.493A7.25 7.25 0 0114.063 1.5h.186a.25.25 0 01.25.25v.186a7.25 7.25 0 01-2.123 5.127l-.459.458a15.21 15.21 0 01-2.499 2.02l-2.317 1.5-2.143-2.143 1.5-2.317a15.25 15.25 0 012.02-2.5l.458-.458h.002zM12 5a1 1 0 11-2 0 1 1 0 012 0zm-8.44 9.56a1.5 1.5 0 10-2.12-2.12c-.734.73-1.047 2.332-1.15 3.003a.23.23 0 00.265.265c.671-.103 2.273-.416 3.005-1.148z"></path>
-				</svg>
-			</div>
-		</div>
-		<div id="lesmobs"></div>
-		<div id="attacker-card" class="hidden">
-			<h3>Attacker Info</h3>
-			<p>Name: <span id="attacker-name"></span></p>
-			<p>Role: <span id="attacker-role"></span></p>
-			<p>HP: <span id="attacker-hp"></span></p>
-		</div>
-		<footer id="footer">
-			<div id="target-notification" class="hidden">
-				You are being targeted!
-			</div>
-		</footer>
-	</body>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Survival Game</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <script src="vendor/three.min.js"></script>
+    <script type="module" src="src/main.js"></script>
+</body>
 </html>
