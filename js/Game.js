@@ -159,7 +159,7 @@ class Game {
 						const distance = projectile.mesh.position.distanceTo(mob.mesh.position);
 						if (distance < 1.5) { // Collision threshold
 							mob.takeDamage(projectile.skillDatas.damage || 0);
-							projectile.end = true; // Mark projectile for removal
+							projectile.destroy();
 						}
 					});
 
@@ -169,7 +169,7 @@ class Game {
 							const distanceToPlayer = projectile.mesh.position.distanceTo(this.#PlayerManager.playerGroupe.position);
 							if (distanceToPlayer < 1.5) {
 								this.#PlayerManager.takeDamage(projectile.skillDatas.damage || 0);
-								projectile.end = true;
+								projectile.destroy();
 							}
 						}
 					}

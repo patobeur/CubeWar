@@ -52,7 +52,7 @@ class Projectile {
 
 		if (this.destinationReached) {
 			if (this.skillDatas.duration) { this.#checkDuration() }
-			else { this.#endThis(); }
+			else { this.destroy(); }
 		}
 	}
 
@@ -92,11 +92,11 @@ class Projectile {
 	#checkDuration() {
 		let duration = new Date().getTime() - this.birthDay.getTime();
 		if (duration >= this.skillDatas.duration) {
-			this.#endThis();
+			this.destroy();
 		}
 	}
 
-	#endThis() {
+	destroy() {
 		this.end = true;
 		this.#removeFromSceneAndDispose();
 	}
