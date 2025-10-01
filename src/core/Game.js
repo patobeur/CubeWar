@@ -1,4 +1,3 @@
-import * as THREE from '../../vendor/three.min.js';
 import EntityManager from '../managers/EntityManager.js';
 import Player from '../entities/Player.js';
 import InputManager from '../managers/InputManager.js';

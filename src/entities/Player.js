@@ -1,4 +1,3 @@
-import * as THREE from '../../vendor/three.min.js';
 import Entity from './Entity.js';
 
 class Player extends Entity {

@@ -1,5 +1,3 @@
-import * as THREE from '../../vendor/three.min.js';
-
 let nextId = 0;
 
 class Entity {
