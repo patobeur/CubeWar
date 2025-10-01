@@ -1,11 +1,20 @@
 class FactionManager {
     constructor(factionNames = ['blue', 'red', 'green', 'yellow', 'purple', 'neutral']) {
         this.factions = {};
+        this.factionColors = {
+            blue: 0x0000FF,
+            red: 0xFF0000,
+            green: 0x00FF00,
+            yellow: 0xFFFF00,
+            purple: 0x800080,
+            neutral: 0x808080
+        };
+
         factionNames.forEach(name => {
             this.factions[name] = {
                 name: name,
+                color: this.factionColors[name] || 0xFFFFFF, // Default to white if color not found
                 members: [],
-                // We can add faction-specific stats here later
             };
         });
         console.log("FactionManager initialized with factions:", this.factions);

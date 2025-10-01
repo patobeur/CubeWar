@@ -78,6 +78,7 @@ class Game {
 
 		this.#FactionManager = new FactionManager();
 
+		const factionColor = this.#FactionManager.factions[this.playerFaction].color;
 		this.#PlayerManager = new PlayerManager(
 			0,
 			0,
@@ -87,6 +88,7 @@ class Game {
 			this.#Camera,
 			this.#Scene,
 			this.playerFaction,
+			factionColor,
 			this.playerRole
 		);
 

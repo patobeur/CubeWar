@@ -47,9 +47,6 @@ class Mobs {
         const faction = this.#FactionManager.getFactions()[factionName];
         if (faction && faction.color) {
             conf.mesh.color = faction.color;
-        } else {
-            // Fallback color if faction color is not defined
-            conf.mesh.color = this.#stringToColor(factionName);
         }
 
         conf.immat = this.#CurrentMobImmat;
@@ -111,17 +108,4 @@ class Mobs {
         });
     }
 
-    // Helper to generate a color from a string (e.g., faction name)
-    #stringToColor(str) {
-        let hash = 0;
-        for (let i = 0; i < str.length; i++) {
-            hash = str.charCodeAt(i) + ((hash << 5) - hash);
-        }
-        let color = '#';
-        for (let i = 0; i < 3; i++) {
-            let value = (hash >> (i * 8)) & 0xFF;
-            color += ('00' + value.toString(16)).substr(-2);
-        }
-        return color;
-    }
 }

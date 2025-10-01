@@ -4,14 +4,15 @@ class PlayerManager {
 	#PConfig
 	#Camera
 	#StatManager
-	constructor(x = 0, y = 0, z = 0, GConfig, StatManager, Camera, Scene, faction = 'blue', role = 'protecteur') {
-		this.scene = Scene
+	constructor(x = 0, y = 0, z = 0, GConfig, StatManager, Camera, Scene, faction = 'blue', factionColor, role = 'protecteur') {
+		this.scene = Scene;
+		this.factionColor = factionColor;
 
 		this.type = 'player';
 		this.#GConfig = GConfig;
 
 		this.role = role;
-		this.#PConfig = new PlayerConfig(this.role, faction);
+		this.#PConfig = new PlayerConfig(this.role);
 		this.stats = this.#PConfig.get_stats();
 
 		// Get mesh configuration from MobConfig
@@ -180,7 +181,7 @@ class PlayerManager {
 		// cube player object
 		this.PlayerMesh = new THREE.Mesh(
 			playerGeometry,
-			new THREE.MeshPhongMaterial({ color: this.#PConfig.get_value('playerColor'), wireframe: this.meshConfig.wireframe || false })
+			new THREE.MeshPhongMaterial({ color: this.factionColor, wireframe: this.meshConfig.wireframe || false })
 		);
 
 		this.PlayerMesh.receiveShadow = this.receiveShadow;
@@ -201,7 +202,7 @@ class PlayerManager {
 			const frontMesh = new THREE.Mesh(
 				new THREE.BoxGeometry(frontConf.size.x, frontConf.size.y, frontConf.size.z),
 				new THREE.MeshPhongMaterial({
-					color: frontConf.color || this.#PConfig.get_value('playerColor'),
+					color: frontConf.color || this.factionColor,
 					wireframe: frontConf.wireframe || false
 				})
 			);
