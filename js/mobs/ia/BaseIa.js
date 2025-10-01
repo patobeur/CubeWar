@@ -32,7 +32,7 @@ class BaseIa {
         // --- State Actions ---
         switch (conf.ia.state) {
             case 'exploring':
-                this._explore(conf);
+                this._explore(conf, allMobs);
                 break;
             case 'attacking':
                 this._attack(conf);
@@ -96,15 +96,21 @@ class BaseIa {
         const dx = targetPosition.x - conf.position.x;
         conf.theta.cur = Math.atan2(dy, dx);
 
-        // Move towards the target
-        const speed = conf.speed;
-        conf.position.x += Math.cos(conf.theta.cur) * speed;
-        conf.position.y += Math.sin(conf.theta.cur) * speed;
+        const distance = new THREE.Vector2(conf.position.x, conf.position.y).distanceTo(
+            new THREE.Vector2(targetPosition.x, targetPosition.y)
+        );
+        const meleeRange = 1.5; // Assumed melee attack range
 
-        this._applyBoundary(conf);
+        // Move towards the target only if not in melee range
+        if (distance > meleeRange) {
+            const speed = conf.speed;
+            conf.position.x += Math.cos(conf.theta.cur) * speed;
+            conf.position.y += Math.sin(conf.theta.cur) * speed;
+            this._applyBoundary(conf);
+        }
     }
 
-    _explore(conf) {
+    _explore(conf, allMobs) {
         conf.ia.actionTimer++;
 
         if (conf.ia.actionTimer >= conf.ia.actionDuration) {
@@ -121,7 +127,7 @@ class BaseIa {
         }
 
         if (conf.ia.isMoving) {
-            this._keepMoving(conf);
+            this._keepMoving(conf, allMobs);
         }
     }
 
@@ -131,11 +137,30 @@ class BaseIa {
         conf.theta.cur += turnAngle;
     }
 
-    _keepMoving(conf) {
+    _keepMoving(conf, allMobs) {
         const speed = conf.speed;
+
+        // Get cohesion vector
+        const cohesionForce = this._getCohesionVector(conf, allMobs);
+        const cohesionWeight = 0.4; // How much should cohesion influence movement?
+
+        // Get current movement vector
+        const movementVector = new THREE.Vector2(Math.cos(conf.theta.cur), Math.sin(conf.theta.cur));
+
+        // Combine vectors
+        movementVector.multiplyScalar(1 - cohesionWeight).add(cohesionForce.multiplyScalar(cohesionWeight));
+        movementVector.normalize();
+
+        // Update angle based on the new combined vector
+        if (movementVector.lengthSq() > 0.001) { // Avoid issues with zero vector
+            conf.theta.cur = Math.atan2(movementVector.y, movementVector.x);
+        }
+
+
         // Movement is based on standard angle (0 = right, PI/2 = up)
-        conf.position.x += Math.cos(conf.theta.cur) * speed;
-        conf.position.y += Math.sin(conf.theta.cur) * speed;
+        conf.position.x += movementVector.x * speed;
+        conf.position.y += movementVector.y * speed;
+
 
         const hitWall = this._applyBoundary(conf);
         if (hitWall) {
@@ -167,5 +192,34 @@ class BaseIa {
         }
 
         return hitWall;
+    }
+
+    _getCohesionVector(conf, allMobs) {
+        const centerOfMass = new THREE.Vector2(0, 0);
+        let friendlyNeighbors = 0;
+
+        allMobs.forEach(ally => {
+            if (ally.conf.id !== conf.id && ally.conf.faction === conf.faction && !ally.conf.states.dead) {
+                centerOfMass.add(new THREE.Vector2(ally.conf.position.x, ally.conf.position.y));
+                friendlyNeighbors++;
+            }
+        });
+
+        if (friendlyNeighbors > 0) {
+            centerOfMass.divideScalar(friendlyNeighbors);
+            const currentPos = new THREE.Vector2(conf.position.x, conf.position.y);
+            const distanceToCenter = currentPos.distanceTo(centerOfMass);
+            const personalSpace = 2.5;
+
+            if (distanceToCenter < personalSpace) {
+                return new THREE.Vector2(0, 0);
+            }
+
+            const cohesionVector = new THREE.Vector2().subVectors(centerOfMass, currentPos);
+            cohesionVector.normalize();
+            return cohesionVector;
+        }
+
+        return new THREE.Vector2(0, 0); // No cohesion if no neighbors
     }
 }
