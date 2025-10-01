@@ -87,7 +87,7 @@ class Mob {
 				this.conf.mesh.size.y,
 				this.conf.mesh.size.z
 			),
-			new THREE.MeshPhongMaterial({ color: this.conf.mesh.color, wireframe: this.conf.mesh.wireframe })
+			new THREE.MeshPhongMaterial({ color: this.conf.faction, wireframe: this.conf.mesh.wireframe })
 		);
 		this.mobMesh.name = this.conf.nickname;
 		this.mobMesh.castShadow = true;
