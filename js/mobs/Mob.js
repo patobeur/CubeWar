@@ -64,11 +64,13 @@ class Mob {
 	#regen() {
 		if (this.regenTimer.current >= this.regenTimer.max) {
 			this.regenTimer.current = 0;
-			// Regenerate energy for mobs
-			if (this.conf.energy < this.conf.maxEnergy) {
-				this.conf.energy += this.conf.regen || 0;
-				if (this.conf.energy > this.conf.maxEnergy) {
-					this.conf.energy = this.conf.maxEnergy;
+			const energy = this.conf.energy;
+			if (energy && energy.regen) {
+				if (energy.current < energy.max) {
+					energy.current += energy.regen;
+					if (energy.current > energy.max) {
+						energy.current = energy.max;
+					}
 				}
 			}
 		} else {

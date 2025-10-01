@@ -69,31 +69,15 @@ class Mobs {
     }
 
     getFactionSpawnPoint(factionName, floorSize) {
-        const factionNames = Object.keys(this.#FactionManager.getFactions()).filter(name => name !== 'neutral' && name !== this.playerFaction);
-        const factionIndex = factionNames.indexOf(factionName);
+        // Spawn all factions in a smaller radius around the center to ensure combat.
+        const spawnRadius = floorSize.x / 4;
 
-        const cornerPositions = [
-            { x: -floorSize.x / 2, y: -floorSize.y / 2 }, // Top-left
-            { x: floorSize.x / 2, y: -floorSize.y / 2 },  // Top-right
-            { x: -floorSize.x / 2, y: floorSize.y / 2 }, // Bottom-left
-            { x: floorSize.x / 2, y: floorSize.y / 2 }   // Bottom-right
-        ];
+        const randomAngle = Math.random() * 2 * Math.PI;
+        const randomRadius = Math.random() * spawnRadius;
 
-        let basePosition;
-        if (factionName === this.playerFaction) {
-            basePosition = { x: 0, y: 0 }; // Center for player's faction
-        } else if (factionIndex !== -1) {
-            basePosition = cornerPositions[factionIndex % cornerPositions.length];
-        } else {
-            // Default to random if something goes wrong
-            return this.#Formula.get_aleaPosOnFloor(floorSize);
-        }
-
-        // Add some randomness to the position to avoid perfect stacking
-        const randomOffset = 10;
         return {
-            x: basePosition.x + this.#Formula.rand(-randomOffset, randomOffset),
-            y: basePosition.y + this.#Formula.rand(-randomOffset, randomOffset),
+            x: Math.cos(randomAngle) * randomRadius,
+            y: Math.sin(randomAngle) * randomRadius,
             z: 0
         };
     }

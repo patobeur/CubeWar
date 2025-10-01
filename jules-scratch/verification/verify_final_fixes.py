@@ -5,6 +5,9 @@ def run_verification():
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
 
+        # Listen for all console events and print them to the terminal
+        page.on("console", lambda msg: print(f"BROWSER LOG: {msg.text}"))
+
         try:
             # 1. Start the game
             page.goto("http://localhost:8000")

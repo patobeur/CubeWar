@@ -39,9 +39,7 @@ class MobConfig {
                 hp: 100,
                 maxHp: 100,
                 stamina: 100,
-                energy: 100,
-                maxEnergy: 100,
-                regen: 0.5,
+                energy: { current: 100, max: 100, regen: 0.5 },
                 food: 100,
                 moral: 50,
                 //-- Statistiques secondaires

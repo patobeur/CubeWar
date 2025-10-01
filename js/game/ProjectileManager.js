@@ -55,7 +55,7 @@ class ProjectileManager {
                 this.StatManager.refresh('stamina', energyStat.current);
             }
         } else {
-            // console.log(`ProjectileManager: Failed to create '${skillName}' for ${caster.id || caster.conf.nickname}. Insufficient energy.`);
+            // console.log(`ProjectileManager: Failed to create '${skillName}' for ${caster.id || caster.conf.nickname}. Insufficient energy. Has ${energyStat ? energyStat.current : 'N/A'}, needs ${energyCost}.`);
         }
     }
 }
