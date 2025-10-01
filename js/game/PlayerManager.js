@@ -11,7 +11,7 @@ class PlayerManager {
 		this.#GConfig = GConfig;
 
 		this.role = role;
-		this.#PConfig = new PlayerConfig(this.role);
+		this.#PConfig = new PlayerConfig(this.role, faction);
 		this.stats = this.#PConfig.get_stats();
 
 		// Get mesh configuration from MobConfig
@@ -158,14 +158,29 @@ class PlayerManager {
 		return torchlight;
 	}
 	#addMeshToModel() {
+		// Apply correct geometry based on role
+		let playerGeometry;
+		switch (this.role) {
+			case 'soigneur': // Healer -> Sphere
+				playerGeometry = new THREE.SphereGeometry(this.meshConfig.size.x / 2, 32, 16);
+				break;
+			case 'tireur': // Shooter -> Tetrahedron
+				playerGeometry = new THREE.TetrahedronGeometry(this.meshConfig.size.x / 1.5);
+				break;
+			case 'protecteur': // Protector -> Cube
+			default:
+				playerGeometry = new THREE.BoxGeometry(
+					this.meshConfig.size.x,
+					this.meshConfig.size.y,
+					this.meshConfig.size.z
+				);
+				break;
+		}
+
 		// cube player object
 		this.PlayerMesh = new THREE.Mesh(
-			new THREE.BoxGeometry(
-				this.meshConfig.size.x,
-				this.meshConfig.size.y,
-				this.meshConfig.size.z
-			),
-			new THREE.MeshPhongMaterial({ color: this.meshConfig.color, wireframe: this.meshConfig.wireframe || false })
+			playerGeometry,
+			new THREE.MeshPhongMaterial({ color: this.#PConfig.get_value('playerColor'), wireframe: this.meshConfig.wireframe || false })
 		);
 
 		this.PlayerMesh.receiveShadow = this.receiveShadow;

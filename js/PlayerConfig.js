@@ -2,11 +2,11 @@ class PlayerConfig {
     #config;
     #role;
 
-    constructor(role = 'protecteur') {
+    constructor(role = 'protecteur', faction = 'red') {
         this.#role = role;
         this.#config = {
             pos: { x: 0, y: 0, z: 0 },
-            playerColor: 'red',
+            playerColor: faction,
             stats: this.#getStatsByRole()
         };
     }
