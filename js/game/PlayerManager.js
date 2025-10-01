@@ -201,7 +201,7 @@ class PlayerManager {
 			const frontMesh = new THREE.Mesh(
 				new THREE.BoxGeometry(frontConf.size.x, frontConf.size.y, frontConf.size.z),
 				new THREE.MeshPhongMaterial({
-					color: frontConf.color || this.meshConfig.color,
+					color: frontConf.color || this.#PConfig.get_value('playerColor'),
 					wireframe: frontConf.wireframe || false
 				})
 			);
