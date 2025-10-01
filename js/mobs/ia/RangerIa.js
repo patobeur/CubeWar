@@ -49,7 +49,6 @@ class RangerIa extends BaseIa {
     _findBuddy(conf, allMobs) {
         let bestBuddy = null;
         let minDistance = Infinity;
-        const perceptionRadius = conf.perception * 1.5; // Can see protectors a bit further away
 
         allMobs.forEach(ally => {
             // Find a living protector of the same faction
@@ -62,7 +61,7 @@ class RangerIa extends BaseIa {
                     new THREE.Vector2(ally.conf.position.x, ally.conf.position.y)
                 );
 
-                if (distance < perceptionRadius && distance < minDistance) {
+                if (distance < minDistance) {
                     minDistance = distance;
                     bestBuddy = ally;
                 }
@@ -122,7 +121,7 @@ class RangerIa extends BaseIa {
         if (conf.ia.buddy) {
             const buddyPos = new THREE.Vector2(conf.ia.buddy.conf.position.x, conf.ia.buddy.conf.position.y);
             const buddyDistance = mobPosition.distanceTo(buddyPos);
-            if (buddyDistance > 3.0) { // Stay within 3 units of buddy
+            if (buddyDistance > 4.0) { // Stay within 4 units of buddy
                 let buddyVector = new THREE.Vector2().subVectors(buddyPos, mobPosition).normalize();
                 finalMove.add(buddyVector.multiplyScalar(0.5)); // Buddy influence is weighted
             }
@@ -164,7 +163,7 @@ class RangerIa extends BaseIa {
         const buddyPos = new THREE.Vector2(buddy.conf.position.x, buddy.conf.position.y);
         const mobPos = new THREE.Vector2(conf.position.x, conf.position.y);
         const distance = mobPos.distanceTo(buddyPos);
-        const followDistance = 2.5;
+        const followDistance = 3.5;
         let isCloseEnough = false;
 
         let finalMove = new THREE.Vector2(0, 0);

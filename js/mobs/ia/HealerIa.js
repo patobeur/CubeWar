@@ -4,19 +4,18 @@ class HealerIa extends BaseIa {
     }
 
     iaAction(conf, player, allMobs) {
-        const perceptionRange = conf.perception;
         const healAmount = 0.5;
         const healCooldown = 1000;
 
         // --- State Transitions ---
-        const injuredAlly = this._findInjuredAlly(conf, allMobs, perceptionRange);
+        const injuredAlly = this._findInjuredAlly(conf, allMobs);
 
         if (injuredAlly) {
             conf.ia.state = 'healing';
             conf.ia.target = injuredAlly;
         } else {
             // If no one is injured, find a healthy ally to follow
-            const allyToFollow = this._findAllyToFollow(conf, allMobs, perceptionRange);
+            const allyToFollow = this._findAllyToFollow(conf, allMobs);
             if (allyToFollow) {
                 conf.ia.state = 'following_ally';
                 conf.ia.target = allyToFollow;
@@ -53,17 +52,15 @@ class HealerIa extends BaseIa {
         }
     }
 
-    _findInjuredAlly(conf, allMobs, perceptionRange) {
+    _findInjuredAlly(conf, allMobs) {
         let bestTarget = null;
         let lowestHpPercent = 1;
-        const mobPosition = new THREE.Vector2(conf.position.x, conf.position.y);
 
         allMobs.forEach(ally => {
             if (ally.conf.id !== conf.id && !ally.conf.states.dead && ally.conf.faction === conf.faction) {
-                const distance = mobPosition.distanceTo(new THREE.Vector2(ally.conf.position.x, ally.conf.position.y));
                 const hpPercent = ally.conf.hp / ally.conf.maxHp;
 
-                if (hpPercent < 1 && distance <= perceptionRange) {
+                if (hpPercent < 1) {
                     if (hpPercent < lowestHpPercent) {
                         lowestHpPercent = hpPercent;
                         bestTarget = ally;
@@ -74,7 +71,7 @@ class HealerIa extends BaseIa {
         return bestTarget;
     }
 
-    _findAllyToFollow(conf, allMobs, perceptionRange) {
+    _findAllyToFollow(conf, allMobs) {
         let nearestProtector = null;
         let minProtectorDistance = Infinity;
         let nearestAlly = null;
@@ -84,18 +81,16 @@ class HealerIa extends BaseIa {
         allMobs.forEach(ally => {
             if (ally.conf.id !== conf.id && !ally.conf.states.dead && ally.conf.faction === conf.faction) {
                 const distance = mobPosition.distanceTo(new THREE.Vector2(ally.conf.position.x, ally.conf.position.y));
-                if (distance <= perceptionRange) {
-                    // Is the ally a protector?
-                    if (ally.conf.role === 'protecteur') {
-                        if (distance < minProtectorDistance) {
-                            minProtectorDistance = distance;
-                            nearestProtector = ally;
-                        }
-                    } else { // It's another type of ally
-                        if (distance < minAllyDistance) {
-                            minAllyDistance = distance;
-                            nearestAlly = ally;
-                        }
+                // Is the ally a protector?
+                if (ally.conf.role === 'protecteur') {
+                    if (distance < minProtectorDistance) {
+                        minProtectorDistance = distance;
+                        nearestProtector = ally;
+                    }
+                } else { // It's another type of ally
+                    if (distance < minAllyDistance) {
+                        minAllyDistance = distance;
+                        nearestAlly = ally;
                     }
                 }
             }
@@ -154,7 +149,7 @@ class HealerIa extends BaseIa {
         const targetPos = new THREE.Vector2(target.conf.position.x, target.conf.position.y);
         const mobPos = new THREE.Vector2(conf.position.x, conf.position.y);
         const distance = mobPos.distanceTo(targetPos);
-        const followDistance = 3.5;
+        const followDistance = 4.5;
 
         let finalMove = new THREE.Vector2(0, 0);
 

@@ -195,20 +195,13 @@ class BaseIa {
     }
 
     _getCohesionVector(conf, allMobs) {
-        const cohesionRadius = conf.perception * 0.75;
         const centerOfMass = new THREE.Vector2(0, 0);
         let friendlyNeighbors = 0;
 
         allMobs.forEach(ally => {
             if (ally.conf.id !== conf.id && ally.conf.faction === conf.faction && !ally.conf.states.dead) {
-                const distance = new THREE.Vector2(conf.position.x, conf.position.y).distanceTo(
-                    new THREE.Vector2(ally.conf.position.x, ally.conf.position.y)
-                );
-
-                if (distance > 0 && distance < cohesionRadius) {
-                    centerOfMass.add(new THREE.Vector2(ally.conf.position.x, ally.conf.position.y));
-                    friendlyNeighbors++;
-                }
+                centerOfMass.add(new THREE.Vector2(ally.conf.position.x, ally.conf.position.y));
+                friendlyNeighbors++;
             }
         });
 
@@ -216,7 +209,7 @@ class BaseIa {
             centerOfMass.divideScalar(friendlyNeighbors);
             const currentPos = new THREE.Vector2(conf.position.x, conf.position.y);
             const distanceToCenter = currentPos.distanceTo(centerOfMass);
-            const personalSpace = 1.5;
+            const personalSpace = 2.5;
 
             if (distanceToCenter < personalSpace) {
                 return new THREE.Vector2(0, 0);
