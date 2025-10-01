@@ -96,12 +96,18 @@ class BaseIa {
         const dx = targetPosition.x - conf.position.x;
         conf.theta.cur = Math.atan2(dy, dx);
 
-        // Move towards the target
-        const speed = conf.speed;
-        conf.position.x += Math.cos(conf.theta.cur) * speed;
-        conf.position.y += Math.sin(conf.theta.cur) * speed;
+        const distance = new THREE.Vector2(conf.position.x, conf.position.y).distanceTo(
+            new THREE.Vector2(targetPosition.x, targetPosition.y)
+        );
+        const meleeRange = 1.5; // Assumed melee attack range
 
-        this._applyBoundary(conf);
+        // Move towards the target only if not in melee range
+        if (distance > meleeRange) {
+            const speed = conf.speed;
+            conf.position.x += Math.cos(conf.theta.cur) * speed;
+            conf.position.y += Math.sin(conf.theta.cur) * speed;
+            this._applyBoundary(conf);
+        }
     }
 
     _explore(conf, allMobs) {
@@ -208,7 +214,15 @@ class BaseIa {
 
         if (friendlyNeighbors > 0) {
             centerOfMass.divideScalar(friendlyNeighbors);
-            const cohesionVector = new THREE.Vector2().subVectors(centerOfMass, new THREE.Vector2(conf.position.x, conf.position.y));
+            const currentPos = new THREE.Vector2(conf.position.x, conf.position.y);
+            const distanceToCenter = currentPos.distanceTo(centerOfMass);
+            const personalSpace = 1.5;
+
+            if (distanceToCenter < personalSpace) {
+                return new THREE.Vector2(0, 0);
+            }
+
+            const cohesionVector = new THREE.Vector2().subVectors(centerOfMass, currentPos);
             cohesionVector.normalize();
             return cohesionVector;
         }

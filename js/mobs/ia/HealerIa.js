@@ -16,7 +16,7 @@ class HealerIa extends BaseIa {
             conf.ia.target = injuredAlly;
         } else {
             // If no one is injured, find a healthy ally to follow
-            const allyToFollow = this._findNearestAlly(conf, allMobs, perceptionRange);
+            const allyToFollow = this._findAllyToFollow(conf, allMobs, perceptionRange);
             if (allyToFollow) {
                 conf.ia.state = 'following_ally';
                 conf.ia.target = allyToFollow;
@@ -74,21 +74,35 @@ class HealerIa extends BaseIa {
         return bestTarget;
     }
 
-    _findNearestAlly(conf, allMobs, perceptionRange) {
+    _findAllyToFollow(conf, allMobs, perceptionRange) {
+        let nearestProtector = null;
+        let minProtectorDistance = Infinity;
         let nearestAlly = null;
-        let minDistance = Infinity;
+        let minAllyDistance = Infinity;
         const mobPosition = new THREE.Vector2(conf.position.x, conf.position.y);
 
         allMobs.forEach(ally => {
             if (ally.conf.id !== conf.id && !ally.conf.states.dead && ally.conf.faction === conf.faction) {
                 const distance = mobPosition.distanceTo(new THREE.Vector2(ally.conf.position.x, ally.conf.position.y));
-                if (distance < minDistance && distance <= perceptionRange) {
-                    minDistance = distance;
-                    nearestAlly = ally;
+                if (distance <= perceptionRange) {
+                    // Is the ally a protector?
+                    if (ally.conf.role === 'protecteur') {
+                        if (distance < minProtectorDistance) {
+                            minProtectorDistance = distance;
+                            nearestProtector = ally;
+                        }
+                    } else { // It's another type of ally
+                        if (distance < minAllyDistance) {
+                            minAllyDistance = distance;
+                            nearestAlly = ally;
+                        }
+                    }
                 }
             }
         });
-        return nearestAlly;
+
+        // Prioritize protector, otherwise follow any other ally.
+        return nearestProtector || nearestAlly;
     }
 
 
@@ -140,18 +154,36 @@ class HealerIa extends BaseIa {
         const targetPos = new THREE.Vector2(target.conf.position.x, target.conf.position.y);
         const mobPos = new THREE.Vector2(conf.position.x, conf.position.y);
         const distance = mobPos.distanceTo(targetPos);
+        const followDistance = 3.5;
 
-        if (distance > 3.5) { // Keep a comfortable distance
-            const moveVector = new THREE.Vector2().subVectors(targetPos, mobPos).normalize();
-            const cohesionVector = this._getCohesionVector(conf, allMobs).multiplyScalar(0.5);
-            moveVector.add(cohesionVector).normalize();
+        let finalMove = new THREE.Vector2(0, 0);
 
-            conf.position.x += moveVector.x * conf.speed;
-            conf.position.y += moveVector.y * conf.speed;
-
-            if (moveVector.lengthSq() > 0.01) {
-                conf.theta.cur = Math.atan2(moveVector.y, moveVector.x);
+        if (distance > followDistance) {
+            // If too far, move towards target
+            let followVector = new THREE.Vector2().subVectors(targetPos, mobPos).normalize();
+            finalMove.add(followVector);
+        } else {
+            // If close enough, just roam a little using a simplified explore logic
+            conf.ia.actionTimer = (conf.ia.actionTimer || 0) + 1;
+            if (conf.ia.actionTimer > (this.Formula.rand(60, 120))) { // Change direction every 1-2 seconds
+                conf.ia.actionTimer = 0;
+                conf.theta.cur += this.Formula.degToRad(this.Formula.rand(-60, 60)); // Small random turn
             }
+            // A small nudge forward to keep it from being static
+            let roamVector = new THREE.Vector2(Math.cos(conf.theta.cur), Math.sin(conf.theta.cur)).multiplyScalar(0.2);
+            finalMove.add(roamVector);
+        }
+
+        // Always add cohesion
+        const cohesionVector = this._getCohesionVector(conf, allMobs).multiplyScalar(0.5);
+        finalMove.add(cohesionVector);
+
+        // Update position and rotation
+        if (finalMove.lengthSq() > 0.01) {
+            finalMove.normalize();
+            conf.position.x += finalMove.x * conf.speed;
+            conf.position.y += finalMove.y * conf.speed;
+            conf.theta.cur = Math.atan2(finalMove.y, finalMove.x);
         }
     }
 }
