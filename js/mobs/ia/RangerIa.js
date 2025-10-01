@@ -157,7 +157,8 @@ class RangerIa extends BaseIa {
             const projectileHeight = conf.mesh.size.z / 2;
             // The mob's rotation is only on the Z-axis. We create a THREE.Euler object
             // to match the format expected by SkillsManager.
-            const mobRotation = new THREE.Euler(0, 0, conf.theta.cur);
+            // We apply the same -PI/2 correction as the visual mesh rotation.
+            const mobRotation = new THREE.Euler(0, 0, conf.theta.cur - (Math.PI / 2));
 
             const skill = new SkillsManager(
                 skillName,
