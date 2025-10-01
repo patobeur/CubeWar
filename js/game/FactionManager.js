@@ -1,66 +1,79 @@
 class FactionManager {
-    constructor(factionNames = ['blue', 'red', 'green', 'yellow', 'purple', 'neutral']) {
-        this.factions = {};
-        factionNames.forEach(name => {
-            this.factions[name] = {
-                name: name,
-                members: [],
-                // We can add faction-specific stats here later
-            };
-        });
-        console.log("FactionManager initialized with factions:", this.factions);
-    }
+	constructor(
+		factionNames = ["blue", "red", "green", "yellow", "purple", "neutral"]
+	) {
+		this.factions = {};
+		this.factionColors = {
+			blue: 0x0000ff,
+			red: 0xff0000,
+			green: 0x00ff00,
+			yellow: 0xffff00,
+			purple: 0xff00ff,
+			neutral: 0xffffff,
+		};
 
-    /**
-     * Assigns a mob to a faction.
-     * @param {object} mob - The mob object to assign.
-     * @param {string} factionName - The name of the faction.
-     */
-    addMobToFaction(mob, factionName) {
-        if (this.factions[factionName]) {
-            this.factions[factionName].members.push(mob);
-            mob.faction = factionName; // Assign faction property to mob
-        } else {
-            console.error(`Faction "${factionName}" does not exist.`);
-        }
-    }
+		factionNames.forEach((name) => {
+			this.factions[name] = {
+				name: name,
+				color: this.factionColors[name] || 0xffffff, // Default to white if color not found
+				members: [],
+			};
+		});
+		console.log("FactionManager initialized with factions:", this.factions);
+	}
 
-    /**
-     * Removes a mob from its faction.
-     * @param {object} mob - The mob object to remove.
-     */
-    removeMobFromFaction(mob) {
-        const factionName = mob.faction;
-        if (factionName && this.factions[factionName]) {
-            const idToRemove = mob.conf ? mob.conf.id : mob.id; // Get ID from mob or player
-            if (!idToRemove) return;
+	/**
+	 * Assigns a mob to a faction.
+	 * @param {object} mob - The mob object to assign.
+	 * @param {string} factionName - The name of the faction.
+	 */
+	addMobToFaction(mob, factionName) {
+		if (this.factions[factionName]) {
+			this.factions[factionName].members.push(mob);
+			mob.faction = factionName; // Assign faction property to mob
+		} else {
+			console.error(`Faction "${factionName}" does not exist.`);
+		}
+	}
 
-            const index = this.factions[factionName].members.findIndex(member => {
-                const memberId = member.conf ? member.conf.id : member.id;
-                return memberId === idToRemove;
-            });
+	/**
+	 * Removes a mob from its faction.
+	 * @param {object} mob - The mob object to remove.
+	 */
+	removeMobFromFaction(mob) {
+		const factionName = mob.faction;
+		if (factionName && this.factions[factionName]) {
+			const idToRemove = mob.conf ? mob.conf.id : mob.id; // Get ID from mob or player
+			if (!idToRemove) return;
 
-            if (index !== -1) {
-                this.factions[factionName].members.splice(index, 1);
-            }
-        }
-    }
+			const index = this.factions[factionName].members.findIndex(
+				(member) => {
+					const memberId = member.conf ? member.conf.id : member.id;
+					return memberId === idToRemove;
+				}
+			);
 
-    /**
-     * Gets a random faction name.
-     * @returns {string} The name of a random faction.
-     */
-    getRandomFaction() {
-        const factionNames = Object.keys(this.factions);
-        const randomIndex = Math.floor(Math.random() * factionNames.length);
-        return factionNames[randomIndex];
-    }
+			if (index !== -1) {
+				this.factions[factionName].members.splice(index, 1);
+			}
+		}
+	}
 
-    /**
-     * Gets all factions.
-     * @returns {object} The factions object.
-     */
-    getFactions() {
-        return this.factions;
-    }
+	/**
+	 * Gets a random faction name.
+	 * @returns {string} The name of a random faction.
+	 */
+	getRandomFaction() {
+		const factionNames = Object.keys(this.factions);
+		const randomIndex = Math.floor(Math.random() * factionNames.length);
+		return factionNames[randomIndex];
+	}
+
+	/**
+	 * Gets all factions.
+	 * @returns {object} The factions object.
+	 */
+	getFactions() {
+		return this.factions;
+	}
 }

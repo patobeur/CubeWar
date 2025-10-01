@@ -81,13 +81,27 @@ class Mob {
 		// };
 
 		// BODY MESH
+		let mobGeometry;
+		switch (this.conf.role) {
+			case 'soigneur': // Healer -> Sphere
+				mobGeometry = new THREE.SphereGeometry(this.conf.mesh.size.x / 2, 32, 16);
+				break;
+			case 'tireur': // Shooter -> Tetrahedron
+				mobGeometry = new THREE.TetrahedronGeometry(this.conf.mesh.size.x / 1.5);
+				break;
+			case 'protecteur': // Protector -> Cube
+			default:
+				mobGeometry = new THREE.BoxGeometry(
+					this.conf.mesh.size.x,
+					this.conf.mesh.size.y,
+					this.conf.mesh.size.z
+				);
+				break;
+		}
+
 		this.mobMesh = new THREE.Mesh(
-			new THREE.BoxGeometry(
-				this.conf.mesh.size.x,
-				this.conf.mesh.size.y,
-				this.conf.mesh.size.z
-			),
-			new THREE.MeshPhongMaterial({ color: this.conf.faction, wireframe: this.conf.mesh.wireframe })
+			mobGeometry,
+			new THREE.MeshPhongMaterial({ color: this.conf.mesh.color, wireframe: this.conf.mesh.wireframe })
 		);
 		this.mobMesh.name = this.conf.nickname;
 		this.mobMesh.castShadow = true;

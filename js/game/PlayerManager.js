@@ -4,8 +4,9 @@ class PlayerManager {
 	#PConfig
 	#Camera
 	#StatManager
-	constructor(x = 0, y = 0, z = 0, GConfig, StatManager, Camera, Scene, faction = 'blue', role = 'protecteur') {
-		this.scene = Scene
+	constructor(x = 0, y = 0, z = 0, GConfig, StatManager, Camera, Scene, faction = 'blue', factionColor, role = 'protecteur') {
+		this.scene = Scene;
+		this.factionColor = factionColor;
 
 		this.type = 'player';
 		this.#GConfig = GConfig;
@@ -158,14 +159,29 @@ class PlayerManager {
 		return torchlight;
 	}
 	#addMeshToModel() {
+		// Apply correct geometry based on role
+		let playerGeometry;
+		switch (this.role) {
+			case 'soigneur': // Healer -> Sphere
+				playerGeometry = new THREE.SphereGeometry(this.meshConfig.size.x / 2, 32, 16);
+				break;
+			case 'tireur': // Shooter -> Tetrahedron
+				playerGeometry = new THREE.TetrahedronGeometry(this.meshConfig.size.x / 1.5);
+				break;
+			case 'protecteur': // Protector -> Cube
+			default:
+				playerGeometry = new THREE.BoxGeometry(
+					this.meshConfig.size.x,
+					this.meshConfig.size.y,
+					this.meshConfig.size.z
+				);
+				break;
+		}
+
 		// cube player object
 		this.PlayerMesh = new THREE.Mesh(
-			new THREE.BoxGeometry(
-				this.meshConfig.size.x,
-				this.meshConfig.size.y,
-				this.meshConfig.size.z
-			),
-			new THREE.MeshPhongMaterial({ color: this.faction, wireframe: this.meshConfig.wireframe || false })
+			playerGeometry,
+			new THREE.MeshPhongMaterial({ color: this.factionColor, wireframe: this.meshConfig.wireframe || false })
 		);
 
 		this.PlayerMesh.receiveShadow = this.receiveShadow;
@@ -186,7 +202,7 @@ class PlayerManager {
 			const frontMesh = new THREE.Mesh(
 				new THREE.BoxGeometry(frontConf.size.x, frontConf.size.y, frontConf.size.z),
 				new THREE.MeshPhongMaterial({
-					color: frontConf.color || this.meshConfig.color,
+					color: frontConf.color || this.factionColor,
 					wireframe: frontConf.wireframe || false
 				})
 			);

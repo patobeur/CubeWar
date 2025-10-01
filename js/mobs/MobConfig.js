@@ -59,7 +59,7 @@ class MobConfig {
                 mesh: {
                     size: { x: 1, y: 1, z: 1 },
                     altitude: 0,
-                    color: "yellow",
+                    color: "#808080", // Neutral grey, will be overridden by faction color
                     wireframe: false,
                     childs: {
                         front: {
@@ -80,7 +80,6 @@ class MobConfig {
                     attack_distance: 2,
                     special_power: { name: "heal", range: 5, cooldown: 0 },
                     mesh: {
-                        color: 0x00ff00, // Green
                         size: { x: 1.2, y: 1.2, z: 1.2 }, // Large cube
                         childs: {
                             front: {
@@ -94,7 +93,6 @@ class MobConfig {
                     attack_distance: 10,
                     attack_cooldown: 1.5,
                     mesh: {
-                        color: 0xff0000, // Red
                         // Inherits size and childs from base config
                     },
                 },
@@ -102,7 +100,6 @@ class MobConfig {
                     attack_distance: 5,
                     special_power: { name: "wall", duration: 3, cooldown: 10 },
                     mesh: {
-                        color: 0x0000ff, // Blue
                         size: { x: 1.5, y: 1.5, z: 0.8 }, // Large, flat cube
                         childs: {
                             front: {

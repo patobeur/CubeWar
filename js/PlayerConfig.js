@@ -6,7 +6,6 @@ class PlayerConfig {
         this.#role = role;
         this.#config = {
             pos: { x: 0, y: 0, z: 0 },
-            playerColor: 'red',
             stats: this.#getStatsByRole()
         };
     }
