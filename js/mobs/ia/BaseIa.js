@@ -3,7 +3,7 @@ class BaseIa {
         this.Formula = new Formula();
     }
 
-    iaAction(conf, player, allMobs) {
+    iaAction(conf, player, allMobs, scene) {
         // On initialization, convert the mob's starting angle (degrees) to radians.
         if (conf.ia.state === undefined) {
             conf.ia.state = 'exploring';

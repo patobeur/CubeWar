@@ -36,10 +36,10 @@ class Mob {
 		}
 	}
 
-	update = (player, allMobs, camera) => {
+	update = (player, allMobs, camera, scene) => {
 		if (this.conf.states.dead) return; // Don't update dead mobs
 
-		this.ia.iaAction(this.conf, player, allMobs);
+		this.ia.iaAction(this.conf, player, allMobs, scene);
 
 		this.mesh.position.set(
 			this.conf.position.x,
