@@ -4,11 +4,13 @@ class Mobs {
     #CurrentMobImmat;
     #Formula;
     #FactionManager;
+    ProjectileManager;
     playerFaction;
 
-    constructor(Config, FactionManager, playerFaction) {
+    constructor(Config, FactionManager, ProjectileManager, playerFaction) {
         this.#Config = Config;
         this.#FactionManager = FactionManager;
+        this.ProjectileManager = ProjectileManager;
         this.playerFaction = playerFaction;
         this.#AllMobs = [];
         this.#CurrentMobImmat = 0;
@@ -58,7 +60,7 @@ class Mobs {
         conf.theta.cur = this.#Formula.rand(0, 360);
         conf.floor = this.#Config.floor;
 
-        const newMob = new Mob(conf);
+        const newMob = new Mob(conf, this.ProjectileManager);
         this.#AllMobs.push(newMob);
         this.#FactionManager.addMobToFaction(newMob, factionName);
 

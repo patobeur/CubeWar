@@ -3,19 +3,20 @@ class HealerIa extends BaseIa {
         super();
     }
 
-    iaAction(conf, player, allMobs) {
+    iaAction(mob, player, allMobs) {
+        const conf = mob.conf;
         const healAmount = 0.5;
         const healCooldown = 1000;
 
         // --- State Transitions ---
-        const injuredAlly = this._findInjuredAlly(conf, allMobs);
+        const injuredAlly = this._findInjuredAlly(mob, allMobs);
 
         if (injuredAlly) {
             conf.ia.state = 'healing';
             conf.ia.target = injuredAlly;
         } else {
             // If no one is injured, find a healthy ally to follow
-            const allyToFollow = this._findAllyToFollow(conf, allMobs);
+            const allyToFollow = this._findAllyToFollow(mob, allMobs);
             if (allyToFollow) {
                 conf.ia.state = 'following_ally';
                 conf.ia.target = allyToFollow;
@@ -28,31 +29,32 @@ class HealerIa extends BaseIa {
 
         // Check for immediate threats ONLY if not healing or following
         if (conf.ia.state === 'exploring') {
-            this._findTarget(conf, player, allMobs);
+            this._findTarget(mob, player, allMobs);
         }
 
 
         // --- State Actions ---
         switch (conf.ia.state) {
             case 'healing':
-                this._heal(conf, healAmount, healCooldown, allMobs);
+                this._heal(mob, healAmount, healCooldown, allMobs);
                 break;
             case 'following_ally':
-                this._followAlly(conf, allMobs);
+                this._followAlly(mob, allMobs);
                 break;
             case 'attacking':
                 // Healer attacks if threatened
-                super._attack(conf);
+                super._attack(mob);
                 break;
             case 'exploring':
             default:
                 // Default to exploring with cohesion
-                super._explore(conf, allMobs);
+                super._explore(mob, allMobs);
                 break;
         }
     }
 
-    _findInjuredAlly(conf, allMobs) {
+    _findInjuredAlly(mob, allMobs) {
+        const conf = mob.conf;
         let bestTarget = null;
         let lowestHpPercent = 1;
 
@@ -71,7 +73,8 @@ class HealerIa extends BaseIa {
         return bestTarget;
     }
 
-    _findAllyToFollow(conf, allMobs) {
+    _findAllyToFollow(mob, allMobs) {
+        const conf = mob.conf;
         let nearestProtector = null;
         let minProtectorDistance = Infinity;
         let nearestAlly = null;
@@ -101,7 +104,8 @@ class HealerIa extends BaseIa {
     }
 
 
-    _heal(conf, healAmount, healCooldown, allMobs) {
+    _heal(mob, healAmount, healCooldown, allMobs) {
+        const conf = mob.conf;
         const target = conf.ia.target;
         if (!target || target.conf.states.dead || target.conf.hp >= target.conf.maxHp) {
             conf.ia.state = 'exploring'; // Revert state if target is invalid
@@ -117,7 +121,7 @@ class HealerIa extends BaseIa {
         if (distance > healRange) {
             // Move towards the target, but with cohesion
             const moveVector = new THREE.Vector2().subVectors(targetPosition, healerPosition).normalize();
-            const cohesionVector = this._getCohesionVector(conf, allMobs).multiplyScalar(0.4);
+            const cohesionVector = this._getCohesionVector(mob, allMobs).multiplyScalar(0.4);
             moveVector.add(cohesionVector).normalize();
 
             conf.position.x += moveVector.x * conf.speed;
@@ -138,7 +142,8 @@ class HealerIa extends BaseIa {
         }
     }
 
-    _followAlly(conf, allMobs) {
+    _followAlly(mob, allMobs) {
+        const conf = mob.conf;
         const target = conf.ia.target;
         if (!target || target.conf.states.dead) {
             conf.ia.state = 'exploring';
@@ -170,7 +175,7 @@ class HealerIa extends BaseIa {
         }
 
         // Always add cohesion
-        const cohesionVector = this._getCohesionVector(conf, allMobs).multiplyScalar(0.5);
+        const cohesionVector = this._getCohesionVector(mob, allMobs).multiplyScalar(0.5);
         finalMove.add(cohesionVector);
 
         // Update position and rotation

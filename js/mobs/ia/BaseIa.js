@@ -3,7 +3,8 @@ class BaseIa {
         this.Formula = new Formula();
     }
 
-    iaAction(conf, player, allMobs) {
+    iaAction(mob, player, allMobs) {
+        const conf = mob.conf;
         // On initialization, convert the mob's starting angle (degrees) to radians.
         if (conf.ia.state === undefined) {
             conf.ia.state = 'exploring';
@@ -17,7 +18,7 @@ class BaseIa {
 
         // --- State Transitions ---
         if (conf.ia.state === 'exploring') {
-            this._findTarget(conf, player, allMobs);
+            this._findTarget(mob, player, allMobs);
         } else if (conf.ia.state === 'attacking') {
             const target = conf.ia.target;
             const isTargetInvalid = !target || (target.conf ? target.conf.states.dead : target.stats.hp.current <= 0);
@@ -32,10 +33,10 @@ class BaseIa {
         // --- State Actions ---
         switch (conf.ia.state) {
             case 'exploring':
-                this._explore(conf, allMobs);
+                this._explore(mob, allMobs);
                 break;
             case 'attacking':
-                this._attack(conf);
+                this._attack(mob);
                 break;
             default:
                 conf.ia.state = 'exploring';
@@ -43,7 +44,8 @@ class BaseIa {
         }
     }
 
-    _findTarget(conf, player, allMobs) {
+    _findTarget(mob, player, allMobs) {
+        const conf = mob.conf;
         const perceptionRange = conf.perception;
         let potentialTargets = [];
         const mobPositionVec = new THREE.Vector3(conf.position.x, conf.position.y, conf.position.z);
@@ -51,18 +53,14 @@ class BaseIa {
         // Check player
         if (player.faction !== 'neutral' && conf.faction !== 'neutral' && player.faction !== conf.faction && player.stats.hp.current > 0) {
             const distance = mobPositionVec.distanceTo(player.playerGroupe.position);
-            if (distance <= perceptionRange) {
-                potentialTargets.push({ target: player, distance: distance });
-            }
+            potentialTargets.push({ target: player, distance: distance });
         }
 
         // Check other mobs
-        allMobs.forEach(mob => {
-            if (mob.conf.id !== conf.id && mob.conf.faction !== 'neutral' && !mob.conf.states.dead && mob.conf.faction !== conf.faction) {
-                const distance = mobPositionVec.distanceTo(mob.mesh.position);
-                if (distance <= perceptionRange) {
-                    potentialTargets.push({ target: mob, distance: distance });
-                }
+        allMobs.forEach(otherMob => {
+            if (otherMob.conf.id !== conf.id && otherMob.conf.faction !== 'neutral' && !otherMob.conf.states.dead && otherMob.conf.faction !== conf.faction) {
+                const distance = mobPositionVec.distanceTo(otherMob.mesh.position);
+                potentialTargets.push({ target: otherMob, distance: distance });
             }
         });
 
@@ -78,7 +76,8 @@ class BaseIa {
         }
     }
 
-    _attack(conf) {
+    _attack(mob) {
+        const conf = mob.conf;
         const target = conf.ia.target;
         if (!target) {
             conf.ia.state = 'exploring';
@@ -106,11 +105,12 @@ class BaseIa {
             const speed = conf.speed;
             conf.position.x += Math.cos(conf.theta.cur) * speed;
             conf.position.y += Math.sin(conf.theta.cur) * speed;
-            this._applyBoundary(conf);
+            this._applyBoundary(mob);
         }
     }
 
-    _explore(conf, allMobs) {
+    _explore(mob, allMobs) {
+        const conf = mob.conf;
         conf.ia.actionTimer++;
 
         if (conf.ia.actionTimer >= conf.ia.actionDuration) {
@@ -119,7 +119,7 @@ class BaseIa {
 
             if (Math.random() > 0.3) {
                 conf.ia.isMoving = true;
-                this._chooseNewDirection(conf);
+                this._chooseNewDirection(mob);
             } else {
                 conf.ia.isMoving = false;
                 conf.ia.actionDuration = this.Formula.rand(1, 2) * 60;
@@ -127,21 +127,23 @@ class BaseIa {
         }
 
         if (conf.ia.isMoving) {
-            this._keepMoving(conf, allMobs);
+            this._keepMoving(mob, allMobs);
         }
     }
 
-    _chooseNewDirection(conf) {
+    _chooseNewDirection(mob) {
+        const conf = mob.conf;
         // Turn by a random amount in radians
         const turnAngle = this.Formula.degToRad(this.Formula.rand(-45, 45));
         conf.theta.cur += turnAngle;
     }
 
-    _keepMoving(conf, allMobs) {
+    _keepMoving(mob, allMobs) {
+        const conf = mob.conf;
         const speed = conf.speed;
 
         // Get cohesion vector
-        const cohesionForce = this._getCohesionVector(conf, allMobs);
+        const cohesionForce = this._getCohesionVector(mob, allMobs);
         const cohesionWeight = 0.4; // How much should cohesion influence movement?
 
         // Get current movement vector
@@ -162,14 +164,15 @@ class BaseIa {
         conf.position.y += movementVector.y * speed;
 
 
-        const hitWall = this._applyBoundary(conf);
+        const hitWall = this._applyBoundary(mob);
         if (hitWall) {
             // Force a change of direction upon hitting a wall
-            this._chooseNewDirection(conf);
+            this._chooseNewDirection(mob);
         }
     }
 
-    _applyBoundary(conf) {
+    _applyBoundary(mob) {
+        const conf = mob.conf;
         const floorSize = conf.floor.size;
         const halfX = floorSize.x / 2;
         const halfY = floorSize.y / 2;
@@ -194,7 +197,8 @@ class BaseIa {
         return hitWall;
     }
 
-    _getCohesionVector(conf, allMobs) {
+    _getCohesionVector(mob, allMobs) {
+        const conf = mob.conf;
         const centerOfMass = new THREE.Vector2(0, 0);
         let friendlyNeighbors = 0;
 

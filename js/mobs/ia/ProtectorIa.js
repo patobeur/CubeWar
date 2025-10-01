@@ -3,9 +3,10 @@ class ProtectorIa extends BaseIa {
         super();
     }
 
-    iaAction(conf, player, allMobs) {
+    iaAction(mob, player, allMobs) {
+        const conf = mob.conf;
         // 1. Prioritize finding threats to allies
-        const threat = this._findThreatToAlly(conf, allMobs);
+        const threat = this._findThreatToAlly(mob, allMobs);
 
         if (threat) {
             conf.ia.state = 'protecting';
@@ -19,14 +20,15 @@ class ProtectorIa extends BaseIa {
         // 2. Perform actions based on state
         if (conf.ia.state === 'protecting') {
             // Move to and attack the threat
-            super._attack(conf);
+            super._attack(mob);
         } else {
             // If no specific threat to an ally is found, revert to base behavior
-            super.iaAction(conf, player, allMobs);
+            super.iaAction(mob, player, allMobs);
         }
     }
 
-    _findThreatToAlly(conf, allMobs) {
+    _findThreatToAlly(mob, allMobs) {
+        const conf = mob.conf;
         const perceptionRange = conf.perception;
         const mobPositionVec = new THREE.Vector3(conf.position.x, conf.position.y, conf.position.z);
         let potentialThreats = [];

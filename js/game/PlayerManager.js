@@ -4,8 +4,9 @@ class PlayerManager {
 	#PConfig
 	#Camera
 	#StatManager
-	constructor(x = 0, y = 0, z = 0, GConfig, StatManager, Camera, Scene, faction = 'blue', factionColor, role = 'protecteur') {
+	constructor(x = 0, y = 0, z = 0, GConfig, StatManager, Camera, Scene, ProjectileManager, faction = 'blue', factionColor, role = 'protecteur') {
 		this.scene = Scene;
+		this.ProjectileManager = ProjectileManager;
 		this.factionColor = factionColor;
 
 		this.type = 'player';
@@ -84,12 +85,7 @@ class PlayerManager {
 		this.#addModelToGroupe();
 
 
-		// SkillsManager
-		this.missiles = [];
-
-		this.skillsInUse = []
-		this.SkillsImmat = this.skillsInUse.length - 1;
-
+		// SkillsManager is now handled by ProjectileManager
 
 	}
 	update() {
@@ -278,29 +274,7 @@ class PlayerManager {
 	// ----------------------------------------------------------------------------------
 	#shoot(skillname) {
 		if (this.ControlsM) {
-			if (this.missiles.length < 5) {
-				let skill = new SkillsManager(
-					skillname,
-					this.playerGroupe.position,
-					this.playerGroupe.rotation,
-					this.hauteur,
-					this.scene
-				);
-
-				// console.log('--------------------------------')
-				// console.log(skill.skillDatas.recastTimer)
-				// console.log(skill.birthDay - new Date())
-				// console.log(new Date())
-				// console.log(skill)
-				if (skill.skillDatas.energyCost < this.stats.stamina.current) {
-					this.stats.stamina.current -= skill.skillDatas.energyCost;
-					if (this.#StatManager) {
-						this.#StatManager.refresh('stamina', this.stats.stamina.current)
-					}
-					skill.init();
-				}
-
-			}
+			this.ProjectileManager.create(this, skillname);
 		}
 	}
 	#updateShoots() {

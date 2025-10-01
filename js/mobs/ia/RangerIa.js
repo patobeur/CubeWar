@@ -3,10 +3,12 @@ class RangerIa extends BaseIa {
         super();
     }
 
-    iaAction(conf, player, allMobs) {
+    iaAction(mob, player, allMobs) {
+        const conf = mob.conf;
         if (conf.ia.paused === undefined) {
             conf.ia.paused = false;
             conf.ia.pauseTimer = 0;
+            conf.ia.lastShot = 0;
         }
 
         const optimalRange = { min: 4.0, max: 8.0 };
@@ -14,12 +16,12 @@ class RangerIa extends BaseIa {
         // --- Target Management ---
         if (!conf.ia.target || conf.ia.target.conf?.states.dead || conf.ia.target.stats?.hp.current <= 0) {
             conf.ia.target = null;
-            this._findTarget(conf, player, allMobs);
+            this._findTarget(mob, player, allMobs);
         }
 
         // --- Buddy Management ---
         if (!conf.ia.buddy || conf.ia.buddy.conf.states.dead) {
-            conf.ia.buddy = this._findBuddy(conf, allMobs);
+            conf.ia.buddy = this._findBuddy(mob, allMobs);
         }
 
         // --- State Transitions ---
@@ -35,18 +37,19 @@ class RangerIa extends BaseIa {
         // --- State Actions ---
         switch (conf.ia.state) {
             case 'attacking':
-                this._kite(conf, optimalRange, allMobs);
+                this._kite(mob, optimalRange, allMobs);
                 break;
             case 'following_buddy':
-                this._followBuddy(conf, allMobs);
+                this._followBuddy(mob, allMobs);
                 break;
             case 'exploring':
-                super._explore(conf, allMobs);
+                super._explore(mob, allMobs);
                 break;
         }
     }
 
-    _findBuddy(conf, allMobs) {
+    _findBuddy(mob, allMobs) {
+        const conf = mob.conf;
         let bestBuddy = null;
         let minDistance = Infinity;
 
@@ -70,7 +73,8 @@ class RangerIa extends BaseIa {
         return bestBuddy;
     }
 
-    _handlePausing(conf) {
+    _handlePausing(mob) {
+        const conf = mob.conf;
         if (conf.ia.paused) {
             conf.ia.pauseTimer--;
             if (conf.ia.pauseTimer <= 0) {
@@ -82,14 +86,15 @@ class RangerIa extends BaseIa {
     }
 
 
-    _kite(conf, optimalRange, allMobs) {
+    _kite(mob, optimalRange, allMobs) {
+        const conf = mob.conf;
         const target = conf.ia.target;
         if (!target) {
             conf.ia.state = 'exploring'; // Revert state if target is lost
             return;
         }
 
-        if (this._handlePausing(conf)) {
+        if (this._handlePausing(mob)) {
             return; // Ranger is paused, do nothing else
         }
 
@@ -102,9 +107,18 @@ class RangerIa extends BaseIa {
         const mobPosition = new THREE.Vector2(conf.position.x, conf.position.y);
         const targetPos = new THREE.Vector2(targetPosition.x, targetPosition.y);
         const distance = mobPosition.distanceTo(targetPos);
-        let inOptimalRange = false;
 
-        // --- Vector-based Movement ---
+        // --- Shooting Logic ---
+        // Shoot if the target is within maximum range.
+        if (distance <= optimalRange.max) {
+            const now = Date.now();
+            if (now - conf.ia.lastShot > 3000) { // 3-second cooldown
+                mob.ProjectileManager.create(mob, 'fireball');
+                conf.ia.lastShot = now;
+            }
+        }
+
+        // --- Movement Logic ---
         let finalMove = new THREE.Vector2(0, 0);
 
         // 1. Kiting Vector (move to optimal range)
@@ -114,7 +128,11 @@ class RangerIa extends BaseIa {
         } else if (distance > optimalRange.max) {
             finalMove.sub(kiteVector.normalize());
         } else {
-            inOptimalRange = true;
+            // In optimal range, so maybe pause instead of moving
+            if (Math.random() < 0.05) {
+                conf.ia.paused = true;
+                conf.ia.pauseTimer = this.Formula.rand(30, 90);
+            }
         }
 
         // 2. Buddy Vector (stay near protector)
@@ -128,7 +146,7 @@ class RangerIa extends BaseIa {
         }
 
         // 3. Cohesion Vector (stick with the group)
-        const cohesionVector = this._getCohesionVector(conf, allMobs).multiplyScalar(0.4);
+        const cohesionVector = this._getCohesionVector(mob, allMobs).multiplyScalar(0.4);
         finalMove.add(cohesionVector);
 
 
@@ -137,9 +155,6 @@ class RangerIa extends BaseIa {
             finalMove.normalize();
             conf.position.x += finalMove.x * conf.speed;
             conf.position.y += finalMove.y * conf.speed;
-        } else if (inOptimalRange && Math.random() < 0.05) { // 5% chance to pause per frame
-            conf.ia.paused = true;
-            conf.ia.pauseTimer = this.Formula.rand(30, 90); // Pause for 0.5 to 1.5 seconds
         }
 
         // Always face the target when attacking
@@ -148,7 +163,8 @@ class RangerIa extends BaseIa {
         conf.theta.cur = Math.atan2(dy, dx);
     }
 
-    _followBuddy(conf, allMobs) {
+    _followBuddy(mob, allMobs) {
+        const conf = mob.conf;
         const buddy = conf.ia.buddy;
         if (!buddy || buddy.conf.states.dead) {
             conf.ia.state = 'exploring';
@@ -156,7 +172,7 @@ class RangerIa extends BaseIa {
             return;
         }
 
-        if (this._handlePausing(conf)) {
+        if (this._handlePausing(mob)) {
             return; // Ranger is paused, do nothing else
         }
 
@@ -185,7 +201,7 @@ class RangerIa extends BaseIa {
         }
 
         // Always add cohesion
-        const cohesionVector = this._getCohesionVector(conf, allMobs).multiplyScalar(0.5);
+        const cohesionVector = this._getCohesionVector(mob, allMobs).multiplyScalar(0.5);
         finalMove.add(cohesionVector);
 
         // Update position and rotation

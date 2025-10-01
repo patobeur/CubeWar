@@ -1,10 +1,13 @@
 class Mob {
-	constructor(conf) {
-		this.conf = conf
+	constructor(conf, ProjectileManager) {
+		this.conf = conf;
+		this.ProjectileManager = ProjectileManager;
 		this.#init()
 	}
 	#init() {
 		this.conf.lastAttack = 0; // Timestamp of the last attack
+		this.regenTimer = { current: 0, max: 10 };
+
 		switch (this.conf.role) {
 			case 'soigneur':
 				this.ia = new HealerIa();
@@ -39,7 +42,8 @@ class Mob {
 	update = (player, allMobs) => {
 		if (this.conf.states.dead) return; // Don't update dead mobs
 
-		this.ia.iaAction(this.conf, player, allMobs);
+		this.#regen();
+		this.ia.iaAction(this, player, allMobs);
 
 		this.mesh.position.set(
 			this.conf.position.x,
@@ -56,6 +60,22 @@ class Mob {
 		// this.bbox.rotation.z = this.conf.theta.cur
 		// this.#refresh_Div()
 	};
+
+	#regen() {
+		if (this.regenTimer.current >= this.regenTimer.max) {
+			this.regenTimer.current = 0;
+			// Regenerate energy for mobs
+			if (this.conf.energy < this.conf.maxEnergy) {
+				this.conf.energy += this.conf.regen || 0;
+				if (this.conf.energy > this.conf.maxEnergy) {
+					this.conf.energy = this.conf.maxEnergy;
+				}
+			}
+		} else {
+			this.regenTimer.current++;
+		}
+	}
+
 	#set_Divs() {
 		this.divs = {}
 		for (var key in this.conf.divs) {

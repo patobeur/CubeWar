@@ -77,6 +77,7 @@ class Game {
 		// --
 
 		this.#FactionManager = new FactionManager();
+		this.ProjectileManager = new ProjectileManager(this.#Scene, this.#StatManager);
 
 		const factionColor = this.#FactionManager.factions[this.playerFaction].color;
 		this.#PlayerManager = new PlayerManager(
@@ -87,6 +88,7 @@ class Game {
 			this.#StatManager,
 			this.#Camera,
 			this.#Scene,
+			this.ProjectileManager,
 			this.playerFaction,
 			factionColor,
 			this.playerRole
@@ -103,7 +105,7 @@ class Game {
 
 		// this.#CHATFACTORY = new ChatBotFactory();
 
-		this.MobsManager = new Mobs(this.#GConfig, this.#FactionManager, this.playerFaction);
+		this.MobsManager = new Mobs(this.#GConfig, this.#FactionManager, this.ProjectileManager, this.playerFaction);
 
 		this.MobsManager.addMobs(this.playerFaction);
 		this.MobsManager.addClouds(5); // Add 5 clouds
@@ -140,9 +142,40 @@ class Game {
 			var delta = this.#clock.getDelta();
 			var elapsed = this.#clock.elapsedTime;
 			this.#PlayerManager.update();
+			this.ProjectileManager.update();
 			//if (this.#OrbitControls) this.#OrbitControls.update(); // only if controls.enableDamping = true || controls.autoRotate = true
 
 			if (this.allMobs) {
+				// --- Projectile Collision Phase ---
+				this.ProjectileManager.projectiles.forEach(projectile => {
+					if (projectile.end) return;
+
+					// Check collision with all mobs
+					this.allMobs.forEach(mob => {
+						if (mob.conf.states.dead) return;
+						if (projectile.casterId === mob.conf.id) return; // Prevent self-collision
+						if (projectile.casterFaction === mob.conf.faction) return; // Prevent friendly fire
+
+						const distance = projectile.mesh.position.distanceTo(mob.mesh.position);
+						if (distance < 1.5) { // Collision threshold
+							mob.takeDamage(projectile.skillDatas.damage || 0);
+							projectile.end = true; // Mark projectile for removal
+						}
+					});
+
+					// Check collision with the player
+					if (!projectile.end) {
+						if (projectile.casterFaction !== this.#PlayerManager.faction) {
+							const distanceToPlayer = projectile.mesh.position.distanceTo(this.#PlayerManager.playerGroupe.position);
+							if (distanceToPlayer < 1.5) {
+								this.#PlayerManager.takeDamage(projectile.skillDatas.damage || 0);
+								projectile.end = true;
+							}
+						}
+					}
+				});
+
+
 				const player = this.#PlayerManager;
 				const now = Date.now();
 				const attackCooldown = 1000; // 1 second

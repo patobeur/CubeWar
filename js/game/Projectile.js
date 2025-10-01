@@ -1,9 +1,11 @@
 "use strict";
-class SkillsManager {
-	constructor(skillname, position, rotation, fromfloor = 1, Scene) {
+class Projectile {
+	constructor(skillname, caster, position, rotation, fromfloor = 1, Scene) {
 		this.formula = new Formula()
 		this.scene = Scene
 		this.fromfloor = fromfloor / 2;
+		this.casterId = caster.id || caster.conf.id;
+		this.casterFaction = caster.faction || caster.conf.faction;
 
 		this.skillDatas = this.#getSkill(skillname, position, rotation);
 
@@ -17,6 +19,7 @@ class SkillsManager {
 		this.destinationReached = false;
 		this.mesh;
 	}
+
 	#getSkill(skillname, position, rotation) {
 		skillname = JSON.parse(JSON.stringify(skillname));
 		position = JSON.parse(JSON.stringify(position));
@@ -30,12 +33,30 @@ class SkillsManager {
 
 		return skill
 	}
+
 	init() {
 		this.birthDay = new Date();
-		this.creatMesh();
-		this.render = setInterval(this.#update, 5);
+		this.#creatMesh();
 	}
-	creatMesh() {
+
+	// This is now the main update method, called by ProjectileManager
+	update() {
+		if (this.end) return;
+
+		if (!this.destinationReached) {
+			this.#setNextPosition();
+			this.#setNextTransform();
+			this.#applyDatasOnMesh();
+			this.#checkDestinationReached()
+		}
+
+		if (this.destinationReached) {
+			if (this.skillDatas.duration) { this.#checkDuration() }
+			else { this.#endThis(); }
+		}
+	}
+
+	#creatMesh() {
 		switch (this.skillDatas.meshType) {
 			case "sphere":
 				this.mesh = new THREE.Mesh(
@@ -58,47 +79,35 @@ class SkillsManager {
 		this.mesh.material.opacity = .6
 
 		this.mesh.scale.set(1, 1, 1)
-		// ????????????????
 		this.#applyDatasOnMesh()
 		this.#applyRotationOnMesh()
 		this.scene.add(this.mesh)
 	}
-	#update = () => {
-		if (!this.destinationReached) {
-			this.#setNextPosition();
-			this.#setNextTransform();
-			this.#applyDatasOnMesh();
-			this.#checkDestinationReached()
-		}
-		if (this.destinationReached) {
-			if (this.skillDatas.duration) { this.#checkDuration() }
-			else { this.#endThis(); }
-		}
 
-	}
 	#applyDatasOnMesh() {
-		// set mesh position 
 		this.mesh.position.set(this.skillDatas.x, this.skillDatas.y, this.skillDatas.z);
-		// if SCALE found
 		if (this.skillDatas.scale) this.mesh.scale.set(this.skillDatas.scale.current, this.skillDatas.scale.current, this.skillDatas.scale.current)
 	}
+
 	#checkDuration() {
 		let duration = new Date().getTime() - this.birthDay.getTime();
 		if (duration >= this.skillDatas.duration) {
 			this.#endThis();
 		}
 	}
+
 	#endThis() {
 		this.end = true;
-		clearInterval(this.render);
-		this.#removeFromSceneAndDispose()
+		this.#removeFromSceneAndDispose();
 	}
+
 	#checkDestinationReached() {
 		this.distance += this.skillDatas.speed;
 		if (this.distance >= this.distanceMax) {
 			this.destinationReached = true;
 		}
 	}
+
 	#setNextTransform() {
 		if (this.skillDatas.scale) {
 			let start = this.skillDatas.scale.start < 0 ? 0 : this.skillDatas.scale.start;
@@ -107,15 +116,17 @@ class SkillsManager {
 			this.skillDatas.scale.current = 1 + start + (((end - start) / (distancedone) - 1))
 		}
 	}
+
 	#setNextPosition() {
 		let nextPos = this.formula.get_NextThreePos(this.skillDatas.x, this.skillDatas.y, this.skillDatas.rotation, this.skillDatas.speed)
 		this.skillDatas.x = nextPos.x
 		this.skillDatas.y = nextPos.y
 	}
+
 	#applyRotationOnMesh() {
-		// if (this.skillDatas.rotation) this.mesh.rotation.z = this.skillDatas.rotation;
 		if (this.skillDatas.rotation) this.mesh.rotation.z = this.skillDatas.rotation;
 	}
+
 	#setSkills(skillname) {
 		let skill = {
 			fireball: {
@@ -129,23 +140,24 @@ class SkillsManager {
 				speed: .5,
 				rotation: 0,
 				addTheta: (Math.PI / 4),
-				fromfloor: 0, // (w /2)
+				fromfloor: 0,
+				damage: 10,
 				energyCost: 5,
 				recastTimer: 1000,
 			},
 			cube: {
 				name: 'cube',
 				meshType: 'sphere',
-				w: .5, //radius
+				w: .5,
 				h: 10,
 				l: 10,
 				distanceMax: 15,
 				color: 'red',
 				speed: .6,
-				scale: { start: 0, end: 5, current: 1 },//min zero,
+				scale: { start: 0, end: 5, current: 1 },
 				rotation: 0,
 				addTheta: 0,
-				fromfloor: 0, // (w /2)
+				fromfloor: 0,
 				duration: 1000,
 				energyCost: 10,
 				recastTimer: 1000,
@@ -164,34 +176,21 @@ class SkillsManager {
 				y: 0,
 				rotation: 0,
 				addTheta: 0,
-				fromfloor: 0, // (w /2)
+				fromfloor: 0,
 				energyCost: 10,
 				recastTimer: 1000,
 			}
 		}
 		return skill[skillname]
 	}
+
 	#removeFromSceneAndDispose() {
+		if (!this.mesh) return;
 		const object = this.scene.getObjectByProperty('uuid', this.mesh.uuid);
-		object.geometry.dispose();
-		object.material.dispose();
-		this.scene.remove(object);
+		if (object) {
+			object.geometry.dispose();
+			object.material.dispose();
+			this.scene.remove(object);
+		}
 	}
-	// getSinValue(val) {
-	// 	let x = 0;//h
-	// 	let y = 0;//k
-
-	// 	let p = 5;
-	// 	let a = 5;
-	// 	let aMax = y + a;
-	// 	let aMin = y - a;
-
-	// 	for (let b = x; b < p + x; b++) {
-
-	// 		let h = h + p;
-	// 		let k = y;
-	// 	}
-	// 	// let b = (2 * Math.PI) / periode;
-
-	// }
 }
