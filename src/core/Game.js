@@ -16,8 +16,6 @@ class Game {
 
     // Camera
     this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    this.camera.position.set(0, 40, 30);
-    this.camera.lookAt(this.scene.position);
 
     // Lighting
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
@@ -67,8 +65,20 @@ class Game {
 
     this.handlePlayerMovement(deltaTime);
     this.entityManager.update(deltaTime);
+    this.updateCamera();
 
     this.renderer.render(this.scene, this.camera);
+  }
+
+  updateCamera() {
+    if (!this.player) return;
+
+    const playerPosition = this.player.mesh.position;
+    // Position the camera behind and above the player
+    const cameraOffset = new THREE.Vector3(0, 20, 35);
+
+    this.camera.position.copy(playerPosition).add(cameraOffset);
+    this.camera.lookAt(playerPosition);
   }
 
   handlePlayerMovement(deltaTime) {
