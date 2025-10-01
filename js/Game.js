@@ -184,7 +184,7 @@ class Game {
 
 				// --- AI and Position Update Phase ---
 				this.allMobs.forEach((mob) => {
-					mob.update(player, this.allMobs);
+					mob.update(player, this.allMobs, this.#Camera, this.#Scene);
 				});
 
 				// --- Cleanup Phase ---

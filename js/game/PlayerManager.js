@@ -102,6 +102,14 @@ class PlayerManager {
 		}
 
 		this.#regen();
+
+		// Update status bars
+		if (this.healthBar && this.energyBar) {
+			this.healthBar.update(this.stats.hp.current, this.stats.hp.max);
+			this.energyBar.update(this.stats.stamina.current, this.stats.stamina.max);
+			this.healthBar.lookAtCamera(this.#Camera);
+			this.energyBar.lookAtCamera(this.#Camera);
+		}
 	}
 	#addPlayerOrbiter(pos, size) {
 		let player = this.playerGroupe.position;
@@ -214,6 +222,21 @@ class PlayerManager {
 			frontMesh.name = 'Player_Front';
 			this.playerGroupe.add(frontMesh);
 		}
+
+		// STATUS BARS
+		const barWidth = this.meshConfig.size.x * 1.2;
+		const barHeight = 0.1;
+		const barOffset = this.meshConfig.size.z / 2 + 0.3;
+
+		// Health bar
+		this.healthBar = new StatusBar(barWidth, barHeight, 0xff0000); // Red
+		this.healthBar.group.position.set(0, 0, barOffset);
+		this.playerGroupe.add(this.healthBar.group);
+
+		// Energy bar
+		this.energyBar = new StatusBar(barWidth, barHeight, 0x0000ff); // Blue
+		this.energyBar.group.position.set(0, 0, barOffset - barHeight - 0.05);
+		this.playerGroupe.add(this.energyBar.group);
 
 		this.playerGroupe.position.set(this.position.x, this.position.y, this.position.z);
 	}

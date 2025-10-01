@@ -36,10 +36,10 @@ class Mob {
 		}
 	}
 
-	update = (player, allMobs) => {
+	update = (player, allMobs, camera, scene) => {
 		if (this.conf.states.dead) return; // Don't update dead mobs
 
-		this.ia.iaAction(this.conf, player, allMobs);
+		this.ia.iaAction(this.conf, player, allMobs, scene);
 
 		this.mesh.position.set(
 			this.conf.position.x,
@@ -55,6 +55,17 @@ class Mob {
 
 		// this.bbox.rotation.z = this.conf.theta.cur
 		// this.#refresh_Div()
+
+		// Update status bars, if they exist (i.e., not a cloud)
+		if (this.healthBar && this.energyBar) {
+			this.healthBar.update(this.conf.hp, this.conf.maxHp);
+			this.energyBar.update(this.conf.stamina, 100); // Assuming maxStamina is 100
+
+			if (camera) {
+				this.healthBar.lookAtCamera(camera);
+				this.energyBar.lookAtCamera(camera);
+			}
+		}
 	};
 	#set_Divs() {
 		this.divs = {}
@@ -111,6 +122,23 @@ class Mob {
 			this.mobMesh.material.opacity = this.conf.mesh.opacity
 		}
 		this.mesh.add(this.mobMesh)
+
+		// STATUS BARS - only for non-cloud mobs
+		if (this.conf.role !== 'cloud') {
+			const barWidth = this.conf.mesh.size.x * 1.2;
+			const barHeight = 0.1;
+			const barOffset = this.conf.mesh.size.z / 2 + 0.3;
+
+			// Health bar
+			this.healthBar = new StatusBar(barWidth, barHeight, 0xff0000); // Red
+			this.healthBar.group.position.set(0, 0, barOffset);
+			this.mesh.add(this.healthBar.group);
+
+			// Energy bar
+			this.energyBar = new StatusBar(barWidth, barHeight, 0x0000ff); // Blue
+			this.energyBar.group.position.set(0, 0, barOffset - barHeight - 0.05); // Position it below the health bar
+			this.mesh.add(this.energyBar.group);
+		}
 
 		// FRONT
 		// Add a front piece only if it is explicitly defined as an object with a size property.

@@ -3,7 +3,7 @@ class RangerIa extends BaseIa {
         super();
     }
 
-    iaAction(conf, player, allMobs) {
+    iaAction(conf, player, allMobs, scene) {
         if (conf.ia.paused === undefined) {
             conf.ia.paused = false;
             conf.ia.pauseTimer = 0;
@@ -35,7 +35,7 @@ class RangerIa extends BaseIa {
         // --- State Actions ---
         switch (conf.ia.state) {
             case 'attacking':
-                this._kite(conf, optimalRange, allMobs);
+                this._kite(conf, optimalRange, allMobs, scene);
                 break;
             case 'following_buddy':
                 this._followBuddy(conf, allMobs);
@@ -82,7 +82,7 @@ class RangerIa extends BaseIa {
     }
 
 
-    _kite(conf, optimalRange, allMobs) {
+    _kite(conf, optimalRange, allMobs, scene) {
         const target = conf.ia.target;
         if (!target) {
             conf.ia.state = 'exploring'; // Revert state if target is lost
@@ -146,6 +146,36 @@ class RangerIa extends BaseIa {
         const dy = targetPosition.y - conf.position.y;
         const dx = targetPosition.x - conf.position.x;
         conf.theta.cur = Math.atan2(dy, dx);
+
+        // --- Shooting Logic ---
+        const attackDistance = conf.attack_distance || 10;
+        const attackCooldown = (conf.attack_cooldown || 1.5) * 1000; // in ms
+        const now = Date.now();
+
+        if (distance <= attackDistance && (now - (conf.lastAttack || 0) > attackCooldown)) {
+            const skillName = 'fireball';
+            const projectileHeight = conf.mesh.size.z / 2;
+            // The mob's rotation is only on the Z-axis. We create a THREE.Euler object
+            // to match the format expected by SkillsManager.
+            // We apply the same -PI/2 correction as the visual mesh rotation.
+            const mobRotation = new THREE.Euler(0, 0, conf.theta.cur - (Math.PI / 2));
+
+            const skill = new SkillsManager(
+                skillName,
+                conf.position,
+                mobRotation,
+                projectileHeight,
+                scene
+            );
+
+            const energyCost = skill.skillDatas.energyCost || 10;
+
+            if (conf.stamina >= energyCost) {
+                conf.stamina -= energyCost;
+                conf.lastAttack = now; // Update last attack time
+                skill.init(); // Fire!
+            }
+        }
     }
 
     _followBuddy(conf, allMobs) {
