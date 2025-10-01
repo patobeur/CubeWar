@@ -56,13 +56,15 @@ class Mob {
 		// this.bbox.rotation.z = this.conf.theta.cur
 		// this.#refresh_Div()
 
-		// Update status bars
-		this.healthBar.update(this.conf.hp, this.conf.maxHp);
-		this.energyBar.update(this.conf.stamina, 100); // Assuming maxStamina is 100
+		// Update status bars, if they exist (i.e., not a cloud)
+		if (this.healthBar && this.energyBar) {
+			this.healthBar.update(this.conf.hp, this.conf.maxHp);
+			this.energyBar.update(this.conf.stamina, 100); // Assuming maxStamina is 100
 
-		if (camera) {
-			this.healthBar.lookAtCamera(camera);
-			this.energyBar.lookAtCamera(camera);
+			if (camera) {
+				this.healthBar.lookAtCamera(camera);
+				this.energyBar.lookAtCamera(camera);
+			}
 		}
 	};
 	#set_Divs() {
@@ -121,20 +123,22 @@ class Mob {
 		}
 		this.mesh.add(this.mobMesh)
 
-		// STATUS BARS
-		const barWidth = this.conf.mesh.size.x * 1.2;
-		const barHeight = 0.1;
-		const barOffset = this.conf.mesh.size.z / 2 + 0.3;
+		// STATUS BARS - only for non-cloud mobs
+		if (this.conf.role !== 'cloud') {
+			const barWidth = this.conf.mesh.size.x * 1.2;
+			const barHeight = 0.1;
+			const barOffset = this.conf.mesh.size.z / 2 + 0.3;
 
-		// Health bar
-		this.healthBar = new StatusBar(barWidth, barHeight, 0xff0000); // Red
-		this.healthBar.group.position.set(0, 0, barOffset);
-		this.mesh.add(this.healthBar.group);
+			// Health bar
+			this.healthBar = new StatusBar(barWidth, barHeight, 0xff0000); // Red
+			this.healthBar.group.position.set(0, 0, barOffset);
+			this.mesh.add(this.healthBar.group);
 
-		// Energy bar
-		this.energyBar = new StatusBar(barWidth, barHeight, 0x0000ff); // Blue
-		this.energyBar.group.position.set(0, 0, barOffset - barHeight - 0.05); // Position it below the health bar
-		this.mesh.add(this.energyBar.group);
+			// Energy bar
+			this.energyBar = new StatusBar(barWidth, barHeight, 0x0000ff); // Blue
+			this.energyBar.group.position.set(0, 0, barOffset - barHeight - 0.05); // Position it below the health bar
+			this.mesh.add(this.energyBar.group);
+		}
 
 		// FRONT
 		// Add a front piece only if it is explicitly defined as an object with a size property.
