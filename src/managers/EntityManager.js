@@ -19,7 +19,8 @@ class EntityManager {
 
   update(deltaTime) {
     for (const entity of this.entities) {
-      entity.update(deltaTime);
+      // Pass the full entity list to each entity for context (e.g., for AI)
+      entity.update(deltaTime, this.entities);
     }
   }
 }

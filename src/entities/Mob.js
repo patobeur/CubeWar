@@ -1,15 +1,18 @@
 import Entity from './Entity.js';
 
 class Mob extends Entity {
-  constructor(geometry, material, ia) {
-    super(geometry, material);
+  constructor(faction, role, ia) {
+    super(faction, role);
     this.ia = ia;
+    this.speed = this.stats.speed;
+
+    // The height will be set in the spawner function after the x/z position is defined.
   }
 
-  update(deltaTime) {
-    super.update(deltaTime);
+  update(deltaTime, entities) {
+    super.update(deltaTime, entities);
     if (this.ia) {
-      this.ia.update(this, deltaTime);
+      this.ia.update(this, deltaTime, entities);
     }
   }
 }

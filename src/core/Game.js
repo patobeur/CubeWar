@@ -1,6 +1,8 @@
 import EntityManager from '../managers/EntityManager.js';
 import Player from '../entities/Player.js';
+import Mob from '../entities/Mob.js';
 import InputManager from '../managers/InputManager.js';
+import BaseIa from '../ai/BaseIa.js';
 
 class Game {
   constructor() {
@@ -39,8 +41,34 @@ class Game {
     this.player = this.createPlayer();
     this.entityManager.add(this.player);
 
+    // Spawn initial enemies
+    this.spawnInitialMobs();
+
     // Handle window resizing
     window.addEventListener('resize', () => this.onWindowResize(), false);
+  }
+
+  spawnInitialMobs() {
+    const enemyFaction = 'RED';
+    const rolesToSpawn = ['PROTECTOR', 'SHOOTER', 'HEALER'];
+    const spawnRadius = 60; // A fixed radius for predictable spawning
+    const angles = [0, (2 * Math.PI) / 3, (4 * Math.PI) / 3]; // 0, 120, 240 degrees
+
+    rolesToSpawn.forEach((role, index) => {
+      const ia = new BaseIa();
+      const mob = new Mob(enemyFaction, role, ia);
+
+      // Assign a fixed position in a circle
+      const angle = angles[index];
+      mob.mesh.position.x = Math.cos(angle) * spawnRadius;
+      mob.mesh.position.z = Math.sin(angle) * spawnRadius;
+
+      // Set height after defining horizontal position to avoid conflicts
+      const boundingBox = new THREE.Box3().setFromObject(mob.mesh);
+      mob.mesh.position.y = (boundingBox.max.y - boundingBox.min.y) / 2;
+
+      this.entityManager.add(mob);
+    });
   }
 
   createPlayer() {
