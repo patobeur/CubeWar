@@ -165,7 +165,7 @@ class PlayerManager {
 				this.meshConfig.size.y,
 				this.meshConfig.size.z
 			),
-			new THREE.MeshPhongMaterial({ color: this.meshConfig.color, wireframe: this.meshConfig.wireframe || false })
+			new THREE.MeshPhongMaterial({ color: this.faction, wireframe: this.meshConfig.wireframe || false })
 		);
 
 		this.PlayerMesh.receiveShadow = this.receiveShadow;
