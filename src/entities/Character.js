@@ -38,7 +38,7 @@ class Character extends Entity {
   }
 
   update(deltaTime, entities, camera) {
-    super.update(deltaTime);
+    super.update(deltaTime, entities, camera);
     if (this.statusBar && camera) {
       // The status bar's position is the character's center y + half their height + a small offset.
       this.statusBar.group.position.x = this.mesh.position.x;
@@ -48,7 +48,8 @@ class Character extends Entity {
       // Update health display and orientation
       const healthPercentage = this.health / this.stats.health;
       this.statusBar.update(healthPercentage);
-      this.statusBar.lookAt(camera.position);
+      // Make the status bar always face the camera (billboard effect)
+      this.statusBar.group.quaternion.copy(camera.quaternion);
     }
   }
 

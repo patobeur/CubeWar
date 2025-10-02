@@ -3,7 +3,9 @@ import InputManager from '../managers/InputManager.js';
 import ProjectileManager from '../managers/ProjectileManager.js';
 import Player from '../entities/Player.js';
 import Mob from '../entities/Mob.js';
-import BaseIa from '../ai/BaseIa.js';
+import ProtectorIa from '../ai/ProtectorIa.js';
+import RangerIa from '../ai/RangerIa.js';
+import HealerIa from '../ai/HealerIa.js';
 
 class Game {
   constructor() {
@@ -34,8 +36,19 @@ class Game {
     const spawnRadius = 60;
     const angles = [0, (2 * Math.PI) / 3, (4 * Math.PI) / 3]; // 0, 120, 240 degrees
 
+    const iaMapping = {
+      PROTECTOR: () => new ProtectorIa(),
+      SHOOTER: () => new RangerIa(this.projectileManager),
+      HEALER: () => new HealerIa(),
+    };
+
     rolesToSpawn.forEach((role, index) => {
-      const ia = new BaseIa();
+      const createIa = iaMapping[role];
+      if (!createIa) {
+        console.error(`No IA mapping for role: ${role}`);
+        return;
+      }
+      const ia = createIa();
       const mob = new Mob(enemyFaction, role, ia);
 
       const angle = angles[index];
@@ -84,7 +97,7 @@ class Game {
 
     this.handlePlayerMovement(deltaTime);
     this.handlePlayerShooting();
-    this.entityManager.update(deltaTime);
+    this.entityManager.update(deltaTime, this.camera);
     this.projectileManager.update(deltaTime, this.entityManager.entities);
     this.updateCamera();
 

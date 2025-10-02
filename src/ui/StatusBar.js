@@ -30,9 +30,6 @@ class StatusBar {
     this.healthBar.scale.x = Math.max(0, healthPercentage);
   }
 
-  lookAt(cameraPosition) {
-    this.group.lookAt(cameraPosition);
-  }
 }
 
 export default StatusBar;
