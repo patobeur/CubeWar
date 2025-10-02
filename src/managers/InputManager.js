@@ -1,22 +1,21 @@
 class InputManager {
   constructor() {
-    this.keys = {}; // Stores the state of the keys
-
-    // Bind event handlers
-    window.addEventListener('keydown', (e) => this.onKeyDown(e), false);
-    window.addEventListener('keyup', (e) => this.onKeyUp(e), false);
-  }
-
-  onKeyDown(event) {
-    this.keys[event.code] = true;
-  }
-
-  onKeyUp(event) {
-    this.keys[event.code] = false;
+    this.keys = {};
+    this.previousKeys = {};
+    window.addEventListener('keydown', (e) => (this.keys[e.code] = true));
+    window.addEventListener('keyup', (e) => (this.keys[e.code] = false));
   }
 
   isKeyPressed(keyCode) {
-    return this.keys[keyCode] || false;
+    return !!this.keys[keyCode];
+  }
+
+  isKeyJustPressed(keyCode) {
+    return this.isKeyPressed(keyCode) && !this.previousKeys[keyCode];
+  }
+
+  update() {
+    this.previousKeys = { ...this.keys };
   }
 }
 

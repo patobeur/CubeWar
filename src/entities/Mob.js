@@ -1,16 +1,13 @@
-import Entity from './Entity.js';
+import Character from './Character.js';
 
-class Mob extends Entity {
+class Mob extends Character {
   constructor(faction, role, ia) {
     super(faction, role);
     this.ia = ia;
-    this.speed = this.stats.speed;
-
-    // The height will be set in the spawner function after the x/z position is defined.
   }
 
-  update(deltaTime, entities) {
-    super.update(deltaTime, entities);
+  update(deltaTime, entities, camera) {
+    super.update(deltaTime, entities, camera);
     if (this.ia) {
       this.ia.update(this, deltaTime, entities);
     }
