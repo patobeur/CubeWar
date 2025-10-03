@@ -6,6 +6,7 @@ import Mob from '../entities/Mob.js';
 import ProtectorIa from '../ai/ProtectorIa.js';
 import RangerIa from '../ai/RangerIa.js';
 import HealerIa from '../ai/HealerIa.js';
+import WaveManager from '../managers/WaveManager.js';
 
 class Game {
   constructor() {
@@ -14,6 +15,8 @@ class Game {
     this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.clock = new THREE.Clock();
+    this.isGameOver = false;
+    this.gameOverUi = document.getElementById('game-over-ui');
 
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(this.renderer.domElement);
@@ -22,10 +25,11 @@ class Game {
     this.entityManager = new EntityManager(this.scene);
     this.inputManager = new InputManager();
     this.projectileManager = new ProjectileManager(this.scene);
+    this.waveManager = new WaveManager(this.entityManager, this.projectileManager);
 
     this.initScene();
     this.initPlayer();
-    this.spawnInitialMobs();
+    // this.spawnInitialMobs(); // Replaced by WaveManager
 
     window.addEventListener('resize', this.onWindowResize.bind(this), false);
   }
@@ -91,7 +95,18 @@ class Game {
   }
 
   #animate() {
+    if (this.isGameOver) {
+      return; // Stop the game loop
+    }
+
     requestAnimationFrame(this.#animate.bind(this));
+
+    // Check for game over condition
+    if (this.player && this.player.isDead) {
+      this.isGameOver = true;
+      this.gameOverUi.style.display = 'flex';
+      return; // Stop processing this frame
+    }
 
     const deltaTime = this.clock.getDelta();
 
@@ -99,6 +114,7 @@ class Game {
     this.handlePlayerShooting();
     this.entityManager.update(deltaTime, this.camera);
     this.projectileManager.update(deltaTime, this.entityManager.entities);
+    this.waveManager.update(deltaTime);
     this.updateCamera();
 
     this.renderer.render(this.scene, this.camera);
